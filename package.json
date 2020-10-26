@@ -2,8 +2,7 @@
   "name": "yg",
   "version": "0.1.0",
   "dependencies": {
-    "fabric-network": "^2.2.3",
-    "reason-promise": "^1.1.2"
+    "fabric-network": "^2.2.3"
   },
   "scripts": {
     "clean": "bsb -clean-world",
