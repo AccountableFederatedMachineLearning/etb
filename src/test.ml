@@ -114,6 +114,17 @@ end = struct
       db = Default.db_create ();
       log_queue = []
     } in
+
+    let fact_handler (fact : literal) : unit =
+      let color = Literal.color (open_literal fact) in
+      if (eq_term color Literal.green) then (
+        let fact_string = pp_to_string pp_literal fact in
+        Js.log("queueing " ^ fact_string);
+        t.log_queue <- fact_string :: t.log_queue
+      ) in
+
+    db_subscribe_all_facts t.db fact_handler;
+
     List.iter (add_clause t) prg;    
     t
 
@@ -129,23 +140,21 @@ end = struct
     Js.log("start");
     (* Probably want to synchronize here *)
 
-    let fact_handler (fact : literal) : unit =  
-      let fact_string = pp_to_string pp_literal fact in
-      Js.log("queueing " ^ fact_string);
-      t.log_queue <- fact_string :: t.log_queue in
-
-    db_subscribe_all_facts t.db fact_handler;
-
     (* Log all messages (without order) *)
     let rec write_queue () =
-      let log m = Js.log("logging " ^ m); log contract m in
-      Js.Promise.all (t.log_queue |> List.map log |> Array.of_list)
+      let messages = t.log_queue in
+      t.log_queue <- [];
+      let log m = Js.log("logging " ^ m); log contract m in      
+      Js.Promise.all (messages |> List.map log |> Array.of_list)
       |> Js.Promise.then_ (fun _ -> Js.Promise.resolve ()) in
 
     let listener (s: string): unit Js.Promise.t =
-      let c = parse_literal s in
-      Js.log("adding fact " ^ s);
-      db_add_fact t.db c;
+      Js.log("receiving fact '" ^ s ^ "'");
+      try
+        let c = parse_literal s in
+        db_add_fact t.db c
+      with Parsing.Parse_error ->
+        Js.log("Parse error when adding '" ^ s ^ "'");       ;
       (* Don't need to log the message that we've just received. *)
       t.log_queue <- List.filter (fun m -> m <> s) t.log_queue;
       write_queue () in
