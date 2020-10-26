@@ -6,6 +6,10 @@ external add_contract_listener : contract -> (string -> unit Js.Promise.t) -> un
 
 external log : contract -> string -> unit Js.Promise.t = "log" [@@bs.module("./fabric.js")]
 
+module Log = struct
+  let trace x = Js.Console.log("[trace] " ^ (Js.String.make x))
+  let info x = Js.Console.info("[info] " ^ (Js.String.make x))
+end
 
 let parse_literal s =
   let lex = Lexing.from_string s in
@@ -22,13 +26,9 @@ let parse_file s =
   let ac = Parser.parse_file Lexer.token lex in
   List.map Default.clause_of_ast ac
 
-let pp_to_string pp x =
-  let buf = Buffer.create 100 in
-  let buf_formatter = Format.formatter_of_buffer buf in
-  Format.pp_set_margin buf_formatter 100;
-  pp buf_formatter x;
-  Format.pp_print_flush buf_formatter ();
-  Buffer.contents buf
+let pp_to_string pp x : string =
+  pp Format.str_formatter x;
+  Format.flush_str_formatter ()
 
 
 (* Registration of node, remote queries. *)
@@ -69,7 +69,7 @@ end = struct
     mutable log_queue : string list
   }
 
-  module Literal = struct
+  module Syntax = struct
 
     let yellow : term = mk_const (StringSymbol.make "yellow")
 
@@ -80,21 +80,21 @@ end = struct
       mk_literal s (arg::args)
 
     let color soft_literal =
-      let (_, (a :: _)) = soft_literal in
-      a
-  end
-
-  module Clause = struct
+      match soft_literal with
+      | _, [] -> failwith "literal has no color"
+      | _, (a :: _) -> 
+        assert (eq_term a yellow || eq_term a green);
+        a
 
     let extend_green clause =
       let (head, body) = open_clause clause in
-      let green_head = Literal.(extend head green) in
-      let green_args = List.map (fun a -> Literal.(extend a green)) body in
+      let green_head = extend head green in
+      let green_args = List.map (fun a -> extend a green) body in
       mk_clause green_head green_args
 
     let extend_yellow clause =
       let (head, body) = open_clause clause in
-      let yellow_head = Literal.(extend head yellow) in
+      let yellow_head = extend head yellow in
       let yellow_args = List.mapi (fun i (s, args) -> 
           mk_literal s (mk_var (-i-1) :: args)) body in
       mk_clause yellow_head yellow_args
@@ -102,12 +102,12 @@ end = struct
   end  
 
   let add_clause t clause =
-    Js.log(pp_to_string pp_clause (Clause.extend_yellow clause));
-    Js.log("");
-    Js.log(pp_to_string pp_clause (Clause.extend_green clause));
-    Js.log("");
-    db_add t.db (Clause.extend_yellow clause);
-    db_add t.db (Clause.extend_green clause)
+    let yellow_clause = Syntax.extend_yellow clause in
+    let green_clause = Syntax.extend_yellow clause in
+    Log.trace(pp_to_string pp_clause yellow_clause ^ "\n");
+    Log.trace(pp_to_string pp_clause green_clause ^ "\n");
+    db_add t.db yellow_clause;
+    db_add t.db green_clause
 
   let create prg = 
     let t = {
@@ -116,16 +116,16 @@ end = struct
     } in
 
     let fact_handler (fact : literal) : unit =
-      let color = Literal.color (open_literal fact) in
-      if (eq_term color Literal.green) then (
+      let color = Syntax.color (open_literal fact) in
+      if (eq_term color Syntax.green) then (
         let fact_string = pp_to_string pp_literal fact in
-        Js.log("queueing " ^ fact_string);
+        Log.trace("queueing " ^ fact_string);
         t.log_queue <- fact_string :: t.log_queue
       ) in
 
     db_subscribe_all_facts t.db fact_handler;
 
-    List.iter (add_clause t) prg;    
+    List.iter (add_clause t) prg;
     t
 
   let add_fact t fact =
@@ -137,27 +137,27 @@ end = struct
         if f = symbol then handler goal else ())
 
   let connect_to_contract t contract = 
-    Js.log("start");
+    Log.info("Connecting to contract");
     (* Probably want to synchronize here *)
 
     (* Log all messages (without order) *)
     let rec write_queue () =
       let messages = t.log_queue in
       t.log_queue <- [];
-      let log m = Js.log("logging " ^ m); log contract m in      
+      let log m = Log.trace("logging " ^ m); log contract m in      
       Js.Promise.all (messages |> List.map log |> Array.of_list)
       |> Js.Promise.then_ (fun _ -> Js.Promise.resolve ()) in
 
     let listener (s: string): unit Js.Promise.t =
-      Js.log("receiving fact '" ^ s ^ "'");
+      Log.trace("receiving fact '" ^ s ^ "'");
       try
         let c = parse_literal s in
         db_add_fact t.db c
       with Parsing.Parse_error ->
-        Js.log("Parse error when adding '" ^ s ^ "'");       ;
-      (* Don't need to log the message that we've just received. *)
-      t.log_queue <- List.filter (fun m -> m <> s) t.log_queue;
-      write_queue () in
+        Log.trace("Parse error when adding '" ^ s ^ "'");       ;
+        (* Don't need to log the message that we've just received. *)
+        t.log_queue <- List.filter (fun m -> m <> s) t.log_queue;
+        write_queue () in
 
     add_contract_listener contract listener 
     |> Js.Promise.then_ write_queue
