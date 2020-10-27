@@ -1,6 +1,9 @@
 {
   "name": "yg",
   "version": "0.1.0",
+  "bs-dependencies": [
+    "bs-express"
+  ],
   "sources": {
     "dir": "src",
     "subdirs": true
