@@ -2,6 +2,7 @@
   "name": "yg",
   "version": "0.1.0",
   "dependencies": {
+    "bs-express": "^1.0.2",
     "fabric-network": "^2.2.3"
   },
   "scripts": {
