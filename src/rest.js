@@ -1,12 +1,49 @@
+const fs = require('fs')
 const express = require('express')
 const fabric = require('./fabric')
 const syntax = require('./syntax.bs')
 const logicService = require('./logicService.bs')
 const rest = require('./rest.bs')
 const app = express()
-const port = 3000
 
+var args = process.argv.slice(2);
+
+// First argument must be source file
+if (args.length < 1) {
+  console.error("Usage: main <file.dl> [port]");
+  process.exit(1)
+}
+const sourceFile = args[0];
+
+// Second argument may be port
+var port = 3000
+if (args.length > 1) {
+  port = args[1]
+}
+
+// Load source file
+var source;
+try {
+  source = fs.readFileSync(sourceFile).toString()
+  console.log("Clauses");
+  console.log(source);
+} catch (err) {
+  console.error("Cannot read file '" + sourceFile + "'.");
+  console.error(err.message);
+  process.exit(1)
+}
+
+// Parse and construct the logic service
 var db;
+try {
+  const prg = syntax.parse_file_exn(source);
+  db = logicService.create(prg);
+} catch (err) {
+  console.log("Parsing error at line " + err.line + ", column " + err.column);
+  return;
+}
+
+// Register REST endpoints
 
 app.get('/', (req, res) => {
   res.send("Okay");
@@ -24,19 +61,6 @@ app.put('/facts/:fact', async (req, res) => {
 
 app.listen(port, async () => {
   console.log(`Listening at http://localhost:${port}`);
-  var src = `
-    a(43, 4) :- a(43, 3).
-    a(43, 3) :- a(43, 2).
-    a(43, 2) :- a(43, 1).
-    a(43, 1).
-  `;
-  try {
-    prg = syntax.parse_file_exn(src);
-  } catch (err) {
-    console.log("Parsing error at line " + err.line + ", column " + err.column);
-    return;
-  }
-  db = logicService.create(prg);
   const contract = await fabric.connect();
   logicService.connect_to_contract(db, contract);
 })
