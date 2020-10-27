@@ -31,7 +31,7 @@ module Encoding : sig
   val mk_literal : Default.literal -> color -> literal
   val mk_clause : Default.clause -> clause
 
-  val make_green : literal -> literal
+  val plain_literal : literal -> Default.literal
 
 end = struct
 
@@ -56,8 +56,8 @@ end = struct
 
   let color_of_literal literal =
     match open_literal literal with
-    | _, [] -> failwith "literal has no color"
-    | _, (a :: _) -> color_of_term a
+    | (_, []) -> failwith "literal has no color"
+    | (_, (a :: _)) -> color_of_term a
 
   let mk_literal fact color =
     let (s, args) = open_literal fact in
@@ -70,14 +70,12 @@ end = struct
         Default.mk_literal s (mk_var (-i-1) :: args)) body in
     Default.mk_clause yellow_head any_args
 
-  let make_green fact =
-    let (s, args) = Default.open_literal fact in
-    match args with
-    | [] -> failwith "literal has no color"
-    | c :: rest ->
+  let plain_literal literal =
+    match open_literal literal with
+    | (_, []) -> failwith "plain_literal may only be applied to encoded literals"
+    | (s, c :: args) ->
       assert (is_color_term c);
-      Default.mk_literal s (term_of_color Green :: rest)
-
+      Default.mk_literal s args
 end 
 
 let all_facts t =
@@ -118,10 +116,10 @@ let create prg =
   let fact_handler (fact : literal) : unit =
     Log.trace("fact handler for " ^ (Syntax.string_of_literal fact));
     if (Encoding.color_of_literal fact = Yellow) then (
-      let green_fact = Encoding.make_green fact in
-      let green_fact_string = Syntax.string_of_literal green_fact in
-      Log.trace("queueing " ^ green_fact_string);
-      t.log_queue <- green_fact_string :: t.log_queue
+      let plain_fact = Encoding.plain_literal fact in
+      let plain_fact_string = Syntax.string_of_literal plain_fact in
+      Log.trace("queueing " ^ plain_fact_string);
+      t.log_queue <- plain_fact_string :: t.log_queue
     ) in
 
   db_subscribe_all_facts t.db fact_handler;
@@ -142,8 +140,9 @@ let connect_to_contract t contract =
   let listener (s: string): unit Js.Promise.t =
     Log.trace("receiving fact '" ^ s ^ "'");
     try
-      let c = Syntax.parse_literal_exn s in
-      db_add_fact t.db c
+      let plain_literal = Syntax.parse_literal_exn s in
+      let encoded_literal = Encoding.mk_literal plain_literal Green in
+      db_add_fact t.db encoded_literal
     with Parsing.Parse_error ->
       Log.trace("Parse error when adding '" ^ s ^ "'");       ;
       (* Don't need to log the message that we've just received. *)
