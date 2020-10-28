@@ -5,10 +5,6 @@ module Log = struct
   let info x = Js.Console.info("[info] " ^ (Js.String.make x))
 end
 
-module DL = struct
-  include Default
-end
-
 (** State of the logic service *)
 type t = {
   db : Default.db;
@@ -114,7 +110,7 @@ let create prg =
   } in
 
   let fact_handler (fact : literal) : unit =
-    Log.trace("fact handler for " ^ (Syntax.string_of_literal fact));
+    Log.trace("adding fact '" ^ (Syntax.string_of_literal fact) ^ "' to db");
     if (Encoding.color_of_literal fact = Yellow) then (
       let plain_fact = Encoding.plain_literal fact in
       let plain_fact_string = Syntax.string_of_literal plain_fact in

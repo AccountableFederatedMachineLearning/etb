@@ -1,6 +1,5 @@
 'use strict'
 const fs = require('fs');
-const path = require('path');
 const { Wallets, Gateway } = require('fabric-network');
 
 const walletDirectoryPath = "../H/fabric-samples/asset-transfer-basic/application-java/wallet";
@@ -21,6 +20,9 @@ async function connect() {
   };
   const gateway = new Gateway();
   await gateway.connect(connectionProfile, gatewayOptions);
+
+  // const pem = gateway.getIdentity().credentials.certificate;
+  // console.log(pem);
 
   const network = await gateway.getNetwork(channelName);
   const contract = network.getContract(chaincodeId);
