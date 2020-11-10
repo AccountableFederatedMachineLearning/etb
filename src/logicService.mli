@@ -1,6 +1,6 @@
 type t
 
-val create : Default.clause list -> t
+val create : Default.clause list -> Id.t -> t
 
 val add_fact : t -> Default.literal -> unit Js.Promise.t
 

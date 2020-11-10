@@ -2,6 +2,7 @@
   "name": "yg",
   "version": "0.1.0",
   "dependencies": {
+    "@peculiar/x509": "^1.0.6",
     "bs-express": "^1.0.2",
     "fabric-network": "^2.2.3",
     "node-forge": "^0.10.0"
