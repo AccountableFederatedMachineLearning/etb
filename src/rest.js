@@ -43,8 +43,11 @@ async function main() {
     const prg = syntax.Cyberlogic.parse_file_exn(userId, source);
     db = logicService.create(userId, prg);
   } catch (err) {
-    console.log("Parsing error at line " + err.line + ", column " + err.column);
-    console.log(err);
+    if (err.msg !== undefined && err.line !== undefined && err.column !== undefined) {
+      console.log(err.msg + " at line " + err.line + ", column " + err.column);
+    } else {
+      console.log(err);
+    }
     return;
   }
 

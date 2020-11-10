@@ -1,7 +1,8 @@
 
 exception Error of {
     line : int;
-    column : int
+    column : int;
+    msg : string
   }
 
 let parse_with_exn rule token lexbuf =
@@ -11,7 +12,7 @@ let parse_with_exn rule token lexbuf =
     let curr = lexbuf.Lexing.lex_curr_p in
     let line = curr.Lexing.pos_lnum in
     let col = curr.Lexing.pos_cnum - curr.Lexing.pos_bol in
-    raise (Error { line = line; column = col })
+    raise (Error { line = line; column = col; msg = "Parse Error" })
 
 module Datalog = struct
   open Default
@@ -87,17 +88,17 @@ module Cyberlogic = struct
       let s = Default.StringSymbol.make s in
       let args = List.map (term_of_ast ~tbl) args in
       mk_literal s col id args
-    | A.Attestation (p, s, args) ->
+    | A.Attestation (loc, p, s, args) ->
       let s = Default.StringSymbol.make s in
       let args = List.map (term_of_ast ~tbl) args in
-      let p_full = 
+      let id  = 
         match List.assoc_opt p defs with
-        | None -> p
-        | Some p_full -> p_full in
-      Js.log(p_full);
-      (* TODO: possible exception here *)
-      let p_id = Id.from_string_exn p_full in
-      mk_literal s col p_id args
+        | None -> raise (
+            Error { line = loc.A.line; 
+                    column = loc.A.column; 
+                    msg = "Identity '" ^ p ^ "' used but not defined" })
+        | Some id -> id in
+      mk_literal s col id args
 
   let clause_of_ast id defs c = match c with
     | A.Clause (a, l) ->

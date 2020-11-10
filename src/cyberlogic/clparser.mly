@@ -5,6 +5,15 @@ this file is part of datalog. See README for the license
 %{
   let without_quotes quoted =
     String.sub quoted 1 (String.length quoted - 2)
+
+  let location_of_pos pos =
+    let open Lexing in
+    { Clast.line = pos.pos_lnum;
+      Clast.column = pos.pos_cnum - pos.pos_bol + 1 }
+
+  let current_location () =
+    location_of_pos (Parsing.symbol_start_pos ())
+
 %}
 
 %token LEFT_PARENTHESIS
@@ -15,6 +24,9 @@ this file is part of datalog. See README for the license
 %token COMMA
 %token SAYS
 %token EQUALS
+%token COLON
+%token SUBJECT
+%token ISSUER
 %token EOI
 %token <string> SINGLE_QUOTED
 %token <string> LOWER_WORD
@@ -58,7 +70,12 @@ abbrevs:
   | abbrevs abbrev { $2 :: $1 }
 
 abbrev:
-  | SINGLE_QUOTED EQUALS principal { (without_quotes $1, $3) }
+  | SINGLE_QUOTED COLON SUBJECT COLON SINGLE_QUOTED ISSUER COLON SINGLE_QUOTED
+     { (without_quotes $1, 
+        Id.{ subject = Name.make_exn (without_quotes $5);
+             issuer = Name.make_exn (without_quotes $8)
+        })
+     }
 
 clauses:
   | clause { [$1] }
@@ -76,9 +93,10 @@ literal:
   | LOWER_WORD { Clast.Atom ($1, []) }
   | LOWER_WORD LEFT_PARENTHESIS args RIGHT_PARENTHESIS
     { Clast.Atom ($1, $3) }
-  | principal SAYS LOWER_WORD { Clast.Attestation ($1, $3, []) }
+  | principal SAYS LOWER_WORD 
+    { Clast.Attestation (current_location (), $1, $3, []) }
   | principal SAYS LOWER_WORD LEFT_PARENTHESIS args RIGHT_PARENTHESIS
-    { Clast.Attestation ($1, $3, $5) }
+    { Clast.Attestation (current_location (), $1, $3, $5) }
 
 query:
   | LEFT_PARENTHESIS args RIGHT_PARENTHESIS IF signed_literals

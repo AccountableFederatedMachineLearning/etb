@@ -40,6 +40,8 @@ rule token =
       | multi_line_comment_unclosed  { lexing_error "Unclosed Comment" lexbuf }
           (* end of input - for channels, strings, ... *)
       | eof                          { EOI }
+      | "Subject"                    { SUBJECT }
+      | "Issuer"                     { ISSUER }
       | lower_word                   { LOWER_WORD(Lexing.lexeme lexbuf) }
       | upper_word                   { UPPER_WORD(Lexing.lexeme lexbuf) }
       | single_quoted                { SINGLE_QUOTED(Lexing.lexeme lexbuf) }
@@ -50,6 +52,7 @@ rule token =
       | ":-"                         { IF }
       | "<-"                         { IF }
       | ","                          { COMMA }
+      | ":"                          { COLON }
       | "="                          { EQUALS }
       | _                            { lexing_error "Invalid Input" lexbuf }
 

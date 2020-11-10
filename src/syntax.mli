@@ -1,7 +1,8 @@
 
 exception Error of {
     line : int;
-    column : int
+    column : int;
+    msg : string
   }
 
 module Datalog : sig

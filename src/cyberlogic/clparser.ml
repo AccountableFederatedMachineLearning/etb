@@ -7,6 +7,9 @@ type token =
   | COMMA
   | SAYS
   | EQUALS
+  | COLON
+  | SUBJECT
+  | ISSUER
   | EOI
   | SINGLE_QUOTED of (string)
   | LOWER_WORD of (string)
@@ -18,7 +21,16 @@ let _ = parse_error;;
 # 6 "clparser.mly"
   let without_quotes quoted =
     String.sub quoted 1 (String.length quoted - 2)
-# 22 "clparser.ml"
+
+  let location_of_pos pos =
+    let open Lexing in
+    { Clast.line = pos.pos_lnum;
+      Clast.column = pos.pos_cnum - pos.pos_bol + 1 }
+
+  let current_location () =
+    location_of_pos (Parsing.symbol_start_pos ())
+
+# 34 "clparser.ml"
 let yytransl_const = [|
   257 (* LEFT_PARENTHESIS *);
   258 (* RIGHT_PARENTHESIS *);
@@ -28,25 +40,28 @@ let yytransl_const = [|
   262 (* COMMA *);
   263 (* SAYS *);
   264 (* EQUALS *);
-  265 (* EOI *);
+  265 (* COLON *);
+  266 (* SUBJECT *);
+  267 (* ISSUER *);
+  268 (* EOI *);
     0|]
 
 let yytransl_block = [|
-  266 (* SINGLE_QUOTED *);
-  267 (* LOWER_WORD *);
-  268 (* UPPER_WORD *);
-  269 (* INT *);
+  269 (* SINGLE_QUOTED *);
+  270 (* LOWER_WORD *);
+  271 (* UPPER_WORD *);
+  272 (* INT *);
     0|]
 
 let yylhs = "\255\255\
 \004\000\001\000\002\000\003\000\005\000\006\000\006\000\012\000\
 \007\000\007\000\010\000\010\000\009\000\009\000\008\000\008\000\
-\008\000\008\000\011\000\015\000\015\000\015\000\015\000\014\000\
-\014\000\016\000\016\000\016\000\016\000\013\000\000\000\000\000\
+\008\000\008\000\011\000\015\000\015\000\015\000\015\000\013\000\
+\013\000\016\000\016\000\016\000\016\000\014\000\000\000\000\000\
 \000\000\000\000\000\000"
 
 let yylen = "\002\000\
-\003\000\002\000\002\000\002\000\002\000\000\000\002\000\003\000\
+\003\000\002\000\002\000\002\000\002\000\000\000\002\000\008\000\
 \001\000\002\000\002\000\004\000\001\000\003\000\001\000\004\000\
 \003\000\006\000\005\000\003\000\004\000\001\000\002\000\001\000\
 \003\000\001\000\001\000\001\000\001\000\001\000\002\000\002\000\
@@ -59,62 +74,64 @@ let yydefred = "\000\000\
 \000\000\000\000\003\000\011\000\000\000\004\000\000\000\000\000\
 \000\000\007\000\029\000\027\000\028\000\026\000\000\000\000\000\
 \005\000\000\000\000\000\014\000\000\000\000\000\001\000\010\000\
-\000\000\000\000\016\000\000\000\012\000\008\000\000\000\025\000\
-\000\000\000\000\000\000\019\000\018\000\000\000\000\000\000\000\
-\020\000\021\000"
+\000\000\000\000\016\000\000\000\012\000\000\000\000\000\025\000\
+\000\000\000\000\000\000\000\000\019\000\018\000\000\000\000\000\
+\000\000\000\000\000\000\020\000\000\000\021\000\008\000"
 
 let yydgoto = "\006\000\
 \009\000\012\000\015\000\018\000\021\000\019\000\032\000\013\000\
-\014\000\033\000\022\000\034\000\011\000\039\000\060\000\040\000"
+\014\000\033\000\022\000\034\000\039\000\011\000\061\000\040\000"
 
 let yysindex = "\020\000\
-\016\255\016\255\016\255\000\000\018\255\000\000\000\000\028\255\
-\000\000\252\254\024\255\000\000\035\255\036\255\000\000\034\255\
-\037\255\000\000\029\255\023\255\000\000\038\255\023\255\000\000\
-\033\255\016\255\000\000\000\000\016\255\000\000\040\255\041\255\
-\016\255\000\000\000\000\000\000\000\000\000\000\047\255\045\255\
-\000\000\050\255\052\255\000\000\053\255\048\255\000\000\000\000\
-\051\255\023\255\000\000\023\255\000\000\000\000\006\255\000\000\
-\057\255\016\255\054\255\000\000\000\000\055\255\006\255\006\255\
-\000\000\000\000"
+\013\255\013\255\013\255\000\000\008\255\000\000\000\000\016\255\
+\000\000\017\255\024\255\000\000\037\255\032\255\000\000\035\255\
+\033\255\000\000\028\255\020\255\000\000\034\255\020\255\000\000\
+\036\255\013\255\000\000\000\000\013\255\000\000\038\255\039\255\
+\013\255\000\000\000\000\000\000\000\000\000\000\046\255\043\255\
+\000\000\050\255\052\255\000\000\053\255\045\255\000\000\000\000\
+\055\255\020\255\000\000\020\255\000\000\048\255\006\255\000\000\
+\058\255\049\255\013\255\057\255\000\000\000\000\054\255\061\255\
+\006\255\059\255\006\255\000\000\056\255\000\000\000\000"
 
 let yyrindex = "\000\000\
 \000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\255\
-\000\000\000\000\000\000\000\000\011\255\000\000\000\000\000\000\
+\000\000\000\000\000\000\000\000\002\255\000\000\000\000\000\000\
 \000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
-\000\000\000\000\000\000\000\000\000\000\000\000\058\255\000\000\
-\059\255\000\000\000\000\000\000\000\000\000\000\000\000\062\255\
+\000\000\000\000\000\000\000\000\000\000\000\000\063\255\000\000\
+\060\255\000\000\000\000\000\000\000\000\000\000\000\000\069\255\
 \000\000\000\000\004\255\000\000\000\000\000\000\000\000\000\000\
 \000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\
-\000\000\000\000\060\255\000\000\000\000\061\255\000\000\000\000\
-\000\000\000\000"
+\000\000\000\000\000\000\062\255\000\000\000\000\000\000\064\255\
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 
 let yygindex = "\000\000\
-\000\000\000\000\000\000\000\000\000\000\000\000\033\000\255\255\
-\242\255\064\000\000\000\000\000\025\000\234\255\235\255\000\000"
+\000\000\000\000\000\000\000\000\000\000\000\000\028\000\255\255\
+\011\000\070\000\000\000\000\000\234\255\000\000\204\255\000\000"
 
-let yytablesize = 71
+let yytablesize = 76
 let yytable = "\010\000\
-\042\000\016\000\015\000\015\000\024\000\015\000\017\000\017\000\
-\015\000\017\000\058\000\044\000\017\000\013\000\045\000\007\000\
-\008\000\016\000\020\000\013\000\001\000\002\000\003\000\004\000\
-\005\000\007\000\008\000\056\000\023\000\057\000\025\000\016\000\
-\035\000\036\000\037\000\038\000\028\000\029\000\031\000\008\000\
-\026\000\065\000\066\000\043\000\027\000\030\000\041\000\046\000\
-\049\000\047\000\050\000\051\000\052\000\059\000\055\000\053\000\
-\062\000\007\000\061\000\063\000\064\000\059\000\059\000\024\000\
-\030\000\048\000\017\000\009\000\022\000\023\000\054\000"
+\042\000\016\000\015\000\015\000\013\000\015\000\017\000\017\000\
+\020\000\017\000\059\000\015\000\068\000\013\000\070\000\017\000\
+\023\000\016\000\007\000\008\000\001\000\002\000\003\000\004\000\
+\005\000\007\000\008\000\056\000\024\000\057\000\025\000\016\000\
+\035\000\036\000\037\000\038\000\044\000\028\000\029\000\045\000\
+\031\000\008\000\026\000\027\000\030\000\041\000\046\000\049\000\
+\050\000\043\000\047\000\051\000\052\000\060\000\054\000\053\000\
+\058\000\064\000\055\000\062\000\048\000\063\000\065\000\060\000\
+\066\000\060\000\067\000\069\000\071\000\030\000\024\000\009\000\
+\017\000\022\000\000\000\023\000"
 
 let yycheck = "\001\000\
-\023\000\003\000\003\001\004\001\009\001\006\001\003\001\004\001\
-\009\001\006\001\005\001\026\000\009\001\003\001\029\000\010\001\
-\011\001\019\000\001\001\009\001\001\000\002\000\003\000\004\000\
-\005\000\010\001\011\001\050\000\001\001\052\000\007\001\033\000\
-\010\001\011\001\012\001\013\001\003\001\004\001\010\001\011\001\
-\006\001\063\000\064\000\011\001\009\001\009\001\009\001\008\001\
-\002\001\009\001\006\001\002\001\001\001\055\000\004\001\003\001\
-\058\000\010\001\002\001\006\001\006\001\063\000\064\000\002\001\
-\007\001\033\000\003\000\009\001\009\001\009\001\046\000"
+\023\000\003\000\003\001\004\001\003\001\006\001\003\001\004\001\
+\001\001\006\001\005\001\012\001\065\000\012\001\067\000\012\001\
+\001\001\019\000\013\001\014\001\001\000\002\000\003\000\004\000\
+\005\000\013\001\014\001\050\000\012\001\052\000\007\001\033\000\
+\013\001\014\001\015\001\016\001\026\000\003\001\004\001\029\000\
+\013\001\014\001\006\001\012\001\012\001\012\001\009\001\002\001\
+\006\001\014\001\012\001\002\001\001\001\055\000\010\001\003\001\
+\009\001\059\000\004\001\002\001\033\000\013\001\006\001\065\000\
+\011\001\067\000\006\001\009\001\013\001\007\001\002\001\012\001\
+\003\000\012\001\255\255\012\001"
 
 let yynames_const = "\
   LEFT_PARENTHESIS\000\
@@ -125,6 +142,9 @@ let yynames_const = "\
   COMMA\000\
   SAYS\000\
   EQUALS\000\
+  COLON\000\
+  SUBJECT\000\
+  ISSUER\000\
   EOI\000\
   "
 
@@ -141,227 +161,232 @@ let yyact = [|
     let _1 = (Parsing.peek_val __caml_parser_env 2 : 'abbrevs) in
     let _2 = (Parsing.peek_val __caml_parser_env 1 : 'clauses) in
     Obj.repr(
-# 42 "clparser.mly"
+# 54 "clparser.mly"
                         ( (_1, _2) )
-# 147 "clparser.ml"
+# 167 "clparser.ml"
                : Clast.file))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 1 : 'literal) in
     Obj.repr(
-# 45 "clparser.mly"
+# 57 "clparser.mly"
                 ( _1 )
-# 154 "clparser.ml"
+# 174 "clparser.ml"
                : Clast.literal))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 1 : 'literals) in
     Obj.repr(
-# 48 "clparser.mly"
+# 60 "clparser.mly"
                  ( _1 )
-# 161 "clparser.ml"
+# 181 "clparser.ml"
                : Clast.literal list))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 1 : 'clause) in
     Obj.repr(
-# 51 "clparser.mly"
+# 63 "clparser.mly"
                ( _1 )
-# 168 "clparser.ml"
+# 188 "clparser.ml"
                : Clast.clause))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 1 : 'query) in
     Obj.repr(
-# 54 "clparser.mly"
+# 66 "clparser.mly"
               ( _1 )
-# 175 "clparser.ml"
+# 195 "clparser.ml"
                : Clast.query))
 ; (fun __caml_parser_env ->
     Obj.repr(
-# 57 "clparser.mly"
+# 69 "clparser.mly"
                    ( [] )
-# 181 "clparser.ml"
+# 201 "clparser.ml"
                : 'abbrevs))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 1 : 'abbrevs) in
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'abbrev) in
     Obj.repr(
-# 58 "clparser.mly"
+# 70 "clparser.mly"
                    ( _2 :: _1 )
-# 189 "clparser.ml"
+# 209 "clparser.ml"
                : 'abbrevs))
 ; (fun __caml_parser_env ->
-    let _1 = (Parsing.peek_val __caml_parser_env 2 : string) in
-    let _3 = (Parsing.peek_val __caml_parser_env 0 : 'principal) in
+    let _1 = (Parsing.peek_val __caml_parser_env 7 : string) in
+    let _5 = (Parsing.peek_val __caml_parser_env 3 : string) in
+    let _8 = (Parsing.peek_val __caml_parser_env 0 : string) in
     Obj.repr(
-# 61 "clparser.mly"
-                                   ( (without_quotes _1, _3) )
-# 197 "clparser.ml"
+# 74 "clparser.mly"
+     ( (without_quotes _1, 
+        Id.{ subject = Name.make_exn (without_quotes _5);
+             issuer = Name.make_exn (without_quotes _8)
+        })
+     )
+# 222 "clparser.ml"
                : 'abbrev))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : 'clause) in
     Obj.repr(
-# 64 "clparser.mly"
+# 81 "clparser.mly"
            ( [_1] )
-# 204 "clparser.ml"
+# 229 "clparser.ml"
                : 'clauses))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 1 : 'clause) in
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'clauses) in
     Obj.repr(
-# 65 "clparser.mly"
+# 82 "clparser.mly"
                    ( _1 :: _2 )
-# 212 "clparser.ml"
+# 237 "clparser.ml"
                : 'clauses))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 1 : 'literal) in
     Obj.repr(
-# 68 "clparser.mly"
+# 85 "clparser.mly"
                 ( Clast.Clause (_1, []) )
-# 219 "clparser.ml"
+# 244 "clparser.ml"
                : 'clause))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 3 : 'literal) in
     let _3 = (Parsing.peek_val __caml_parser_env 1 : 'literals) in
     Obj.repr(
-# 69 "clparser.mly"
+# 86 "clparser.mly"
                             ( Clast.Clause (_1, _3) )
-# 227 "clparser.ml"
+# 252 "clparser.ml"
                : 'clause))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : 'literal) in
     Obj.repr(
-# 72 "clparser.mly"
+# 89 "clparser.mly"
             ( [_1] )
-# 234 "clparser.ml"
+# 259 "clparser.ml"
                : 'literals))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : 'literal) in
     let _3 = (Parsing.peek_val __caml_parser_env 0 : 'literals) in
     Obj.repr(
-# 73 "clparser.mly"
+# 90 "clparser.mly"
                            ( _1 :: _3 )
-# 242 "clparser.ml"
+# 267 "clparser.ml"
                : 'literals))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : string) in
     Obj.repr(
-# 76 "clparser.mly"
+# 93 "clparser.mly"
                ( Clast.Atom (_1, []) )
-# 249 "clparser.ml"
+# 274 "clparser.ml"
                : 'literal))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 3 : string) in
     let _3 = (Parsing.peek_val __caml_parser_env 1 : 'args) in
     Obj.repr(
-# 78 "clparser.mly"
+# 95 "clparser.mly"
     ( Clast.Atom (_1, _3) )
-# 257 "clparser.ml"
+# 282 "clparser.ml"
                : 'literal))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : 'principal) in
     let _3 = (Parsing.peek_val __caml_parser_env 0 : string) in
     Obj.repr(
-# 79 "clparser.mly"
-                              ( Clast.Attestation (_1, _3, []) )
-# 265 "clparser.ml"
+# 97 "clparser.mly"
+    ( Clast.Attestation (current_location (), _1, _3, []) )
+# 290 "clparser.ml"
                : 'literal))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 5 : 'principal) in
     let _3 = (Parsing.peek_val __caml_parser_env 3 : string) in
     let _5 = (Parsing.peek_val __caml_parser_env 1 : 'args) in
     Obj.repr(
-# 81 "clparser.mly"
-    ( Clast.Attestation (_1, _3, _5) )
-# 274 "clparser.ml"
+# 99 "clparser.mly"
+    ( Clast.Attestation (current_location (), _1, _3, _5) )
+# 299 "clparser.ml"
                : 'literal))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 3 : 'args) in
     let _5 = (Parsing.peek_val __caml_parser_env 0 : 'signed_literals) in
     Obj.repr(
-# 85 "clparser.mly"
+# 103 "clparser.mly"
     (
       let pos_literals, neg_literal = _5 in
       Clast.Query (_2, pos_literals, neg_literal)
     )
-# 285 "clparser.ml"
+# 310 "clparser.ml"
                : 'query))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : 'literal) in
     let _3 = (Parsing.peek_val __caml_parser_env 0 : 'signed_literals) in
     Obj.repr(
-# 92 "clparser.mly"
+# 110 "clparser.mly"
     ( let pos, neg = _3 in _1 :: pos, neg )
-# 293 "clparser.ml"
+# 318 "clparser.ml"
                : 'signed_literals))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 2 : 'literal) in
     let _4 = (Parsing.peek_val __caml_parser_env 0 : 'signed_literals) in
     Obj.repr(
-# 94 "clparser.mly"
+# 112 "clparser.mly"
     ( let pos, neg = _4 in pos, _2 :: neg )
-# 301 "clparser.ml"
+# 326 "clparser.ml"
                : 'signed_literals))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : 'literal) in
     Obj.repr(
-# 95 "clparser.mly"
+# 113 "clparser.mly"
             ( [_1], [] )
-# 308 "clparser.ml"
+# 333 "clparser.ml"
                : 'signed_literals))
 ; (fun __caml_parser_env ->
     let _2 = (Parsing.peek_val __caml_parser_env 0 : 'literal) in
     Obj.repr(
-# 96 "clparser.mly"
+# 114 "clparser.mly"
                 ( [], [_2] )
-# 315 "clparser.ml"
+# 340 "clparser.ml"
                : 'signed_literals))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : 'term) in
     Obj.repr(
-# 99 "clparser.mly"
+# 117 "clparser.mly"
          ( [_1] )
-# 322 "clparser.ml"
+# 347 "clparser.ml"
                : 'args))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 2 : 'term) in
     let _3 = (Parsing.peek_val __caml_parser_env 0 : 'args) in
     Obj.repr(
-# 100 "clparser.mly"
+# 118 "clparser.mly"
                      ( _1 :: _3 )
-# 330 "clparser.ml"
+# 355 "clparser.ml"
                : 'args))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : string) in
     Obj.repr(
-# 103 "clparser.mly"
+# 121 "clparser.mly"
         ( Clast.Const _1 )
-# 337 "clparser.ml"
+# 362 "clparser.ml"
                : 'term))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : string) in
     Obj.repr(
-# 104 "clparser.mly"
+# 122 "clparser.mly"
                ( Clast.Const _1 )
-# 344 "clparser.ml"
+# 369 "clparser.ml"
                : 'term))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : string) in
     Obj.repr(
-# 105 "clparser.mly"
+# 123 "clparser.mly"
                ( Clast.Var _1 )
-# 351 "clparser.ml"
+# 376 "clparser.ml"
                : 'term))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : string) in
     Obj.repr(
-# 106 "clparser.mly"
+# 124 "clparser.mly"
                   ( Clast.Quoted _1 )
-# 358 "clparser.ml"
+# 383 "clparser.ml"
                : 'term))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : string) in
     Obj.repr(
-# 109 "clparser.mly"
+# 127 "clparser.mly"
                   ( without_quotes _1 )
-# 365 "clparser.ml"
+# 390 "clparser.ml"
                : 'principal))
 (* Entry parse_literal *)
 ; (fun __caml_parser_env -> raise (Parsing.YYexit (Parsing.peek_val __caml_parser_env 0)))

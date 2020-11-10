@@ -7,6 +7,9 @@ type token =
   | COMMA
   | SAYS
   | EQUALS
+  | COLON
+  | SUBJECT
+  | ISSUER
   | EOI
   | SINGLE_QUOTED of (string)
   | LOWER_WORD of (string)

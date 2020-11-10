@@ -14,5 +14,6 @@ let facts_put db fact =
       )
   with
   | Syntax.Error err ->
-    let msg = Printf.sprintf "Parsing error at line %i, column %i" err.line err.column in
+    let msg = Printf.sprintf "%s at line %i, column %i" 
+        err.msg err.line err.column in
     Js.Promise.resolve msg
