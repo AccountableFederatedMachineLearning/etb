@@ -20,6 +20,12 @@ end
 
 module Cyberlogic : sig
 
+  val parse_literal_exn : Id.t -> Cyberlogic.color -> string -> Cyberlogic.literal
+
+  val parse_clause_exn : Id.t -> string -> Cyberlogic.clause
+
+  val parse_file_exn : Id.t -> string -> Cyberlogic.clause list
+
   val short_literal : Cyberlogic.literal -> string
 
   val short_clause : Cyberlogic.clause -> string

@@ -77,14 +77,6 @@ let mk_clause = Default.mk_clause
 let head clause = Default.of_soft_lit (fst (Default.open_clause clause))
 let body clause = List.map Default.of_soft_lit (snd (Default.open_clause clause))
 
-let from_datalog clause id =
-  let ((s, args), body) = open_clause clause in
-  let yellow_head = mk_open_literal s (color_term Yellow) (principal_term id) args in
-  let any_args = List.mapi (fun i (s, args) -> 
-      mk_open_literal s (mk_var (-i-1)) (principal_term id) args) 
-      body in
-  Default.mk_clause yellow_head any_args
-
 let is_fact =
   Default.is_fact 
 

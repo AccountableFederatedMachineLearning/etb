@@ -16,10 +16,6 @@ val head : clause -> literal
 val body : clause -> literal list
 val is_fact : clause -> bool
 
-(* Should probably go to parser *)
-val from_datalog : Default.clause -> Id.t -> clause
-
-
 (* Expose interface of bottom-up *)
 type db
 

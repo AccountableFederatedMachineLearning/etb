@@ -1,7 +1,7 @@
 
 type t
 
-val create : Default.clause list -> Id.t -> t
+val create : Id.t -> Cyberlogic.clause list -> t
 
 val add_fact : t -> Default.literal -> unit Js.Promise.t
 

@@ -1,20 +1,20 @@
-open Default
 
 exception Error of {
     line : int;
     column : int
   }
 
-module Datalog = struct
+let parse_with_exn rule token lexbuf =
+  try
+    rule token lexbuf
+  with _ ->
+    let curr = lexbuf.Lexing.lex_curr_p in
+    let line = curr.Lexing.pos_lnum in
+    let col = curr.Lexing.pos_cnum - curr.Lexing.pos_bol in
+    raise (Error { line = line; column = col })
 
-  let parse_with_exn rule token lexbuf =
-    try
-      rule token lexbuf
-    with _ ->
-      let curr = lexbuf.Lexing.lex_curr_p in
-      let line = curr.Lexing.pos_lnum in
-      let col = curr.Lexing.pos_cnum - curr.Lexing.pos_bol in
-      raise (Error { line = line; column = col })
+module Datalog = struct
+  open Default
 
   let parse_literal_exn s =
     let lex = Lexing.from_string s in
@@ -46,18 +46,113 @@ end
 
 module Cyberlogic = struct
 
+  (* Parsing *)
+
+  module A = Clast
+
+  open Cyberlogic
+
+  type vartbl = {
+    mutable vartbl_count : int;
+    vartbl_tbl : (string,int) Hashtbl.t;
+  }
+
+  let mk_vartbl () =
+    { vartbl_count = 0;
+      vartbl_tbl = Hashtbl.create 5;
+    }
+
+  let nextvar ~tbl () =
+    let n = tbl.vartbl_count in
+    tbl.vartbl_count <- n + 1;
+    n
+
+  let getvar ~tbl name =
+    try Hashtbl.find tbl.vartbl_tbl name
+    with Not_found ->
+      let n = tbl.vartbl_count in
+      Hashtbl.add tbl.vartbl_tbl name n;
+      tbl.vartbl_count <- n + 1;
+      n
+
+  let term_of_ast ~tbl ast = match ast with
+    | A.Const s
+    | A.Quoted s ->
+      Default.mk_const (Default.StringSymbol.make s)
+    | A.Var x ->
+      Default.mk_var (getvar ~tbl x)
+
+  let literal_of_ast id defs col ?(tbl=mk_vartbl ()) lit = match lit with
+    | A.Atom (s, args) ->
+      let s = Default.StringSymbol.make s in
+      let args = List.map (term_of_ast ~tbl) args in
+      mk_literal s col id args
+    | A.Attestation (p, s, args) ->
+      let s = Default.StringSymbol.make s in
+      let args = List.map (term_of_ast ~tbl) args in
+      let p_full = 
+        match List.assoc_opt p defs with
+        | None -> p
+        | Some p_full -> p_full in
+      Js.log(p_full);
+      (* TODO: possible exception here *)
+      let p_id = Id.from_string_exn p_full in
+      mk_literal s col p_id args
+
+  let clause_of_ast id defs c = match c with
+    | A.Clause (a, l) ->
+      let tbl = mk_vartbl () in
+      let a = literal_of_ast id defs Cyberlogic.Yellow ~tbl a in
+      let l = List.map (fun x -> let col = Cyberlogic.ColorVar(nextvar ~tbl ()) in 
+                         literal_of_ast id defs col ~tbl x) l in
+      mk_clause a l
+
+(*
+  let query_of_ast id defs q = match q with
+    | A.Query (vars, lits, neg) ->
+      let tbl = mk_vartbl () in
+      let lits = List.map (literal_of_ast id defs ~tbl) lits in
+      let neg = List.map (literal_of_ast id defs ~tbl) neg in
+      let vars = Array.of_list vars in
+      let vars = Array.map
+          (fun t -> match term_of_ast ~tbl t with
+             | Var i -> i
+             | Const _ -> failwith "query_of_ast: expected variables")
+          vars
+      in
+      vars, lits, neg
+      *)
+
+  let parse_literal_exn id col s = 
+    let lex = Lexing.from_string s in
+    let ac = parse_with_exn Clparser.parse_literal Cllexer.token lex in
+    let defs = [] in
+    literal_of_ast id defs col ac
+
+  let parse_clause_exn id s =
+    let lex = Lexing.from_string s in
+    let ac = parse_with_exn Clparser.parse_clause Cllexer.token lex in
+    let defs = [] in
+    clause_of_ast id defs ac
+
+  let parse_file_exn id s =
+    let lex = Lexing.from_string s in
+    let (defs, ac) = parse_with_exn Clparser.parse_file Cllexer.token lex in
+    List.map (clause_of_ast id defs) ac
+
+  (* Printing *)
+
   let short_literal literal =
-    let open Cyberlogic in
-    let color = match color literal with 
+    let color_string = match color literal with 
       | Yellow -> "yellow"
       | Green -> "green"
       | ColorVar i when i >= 0 -> "X" ^ (string_of_int i)
       | ColorVar i -> "Y" ^ (string_of_int (-i)) in
-    let principal = match Id.Name.get (principal literal).subject "CN" with
+    let principal_string = match Id.Name.get (principal literal).subject "CN" with
       | None -> "<unknown>"
       | Some n -> n in
-    let claim = Datalog.string_of_literal (plain_literal literal) in
-    principal ^ " says " ^ claim ^ " [" ^ color ^ "]"
+    let claim_string = Datalog.string_of_literal (plain_literal literal) in
+    principal_string ^ " says " ^ claim_string ^ " [" ^ color_string ^ "]"
 
   let short_clause clause =
     let h = short_literal (Cyberlogic.head clause) in

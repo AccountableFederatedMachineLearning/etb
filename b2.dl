@@ -1,0 +1,4 @@
+'appUser' = 'OU=client+OU=org1+OU=department2,CN=appUser#C=US,ST=North Carolina,L=Durham,O=org1.example.com,CN=ca.org1.example.com'
+
+b(1) :- a(1), b(2), 'appUser' says a(2).
+b(2) :- a(3), a(4).

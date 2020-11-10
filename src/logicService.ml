@@ -39,13 +39,11 @@ let all_facts t =
   Cyberlogic.db_fold (fun facts clause ->
       if Cyberlogic.is_fact clause then clause :: facts else facts) [] t.db
 
-let add_datalog_clause t clause =
-  let encoded_clause = Cyberlogic.from_datalog clause t.id in
-  Log.trace (Syntax.Cyberlogic.short_clause encoded_clause);
-  Cyberlogic.db_add t.db encoded_clause
+let add_clause t clause =
+  Log.trace (Syntax.Cyberlogic.short_clause clause);
+  Cyberlogic.db_add t.db clause
 
-
-let create datalog_prg id = 
+let create id clauses = 
   let t = {
     db = Cyberlogic.db_create ();
     id = id;
@@ -62,7 +60,7 @@ let create datalog_prg id =
 
   Cyberlogic.db_subscribe_all_facts t.db fact_handler;
 
-  List.iter (add_datalog_clause t) datalog_prg;
+  List.iter (add_clause t) clauses;
   t
 
 (*
