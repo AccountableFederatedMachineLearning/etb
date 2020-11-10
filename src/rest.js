@@ -38,12 +38,13 @@ async function main() {
   // Parse and construct the logic service
   var db;
   try {
-    const prg = syntax.parse_file_exn(source);
+    const prg = syntax.Datalog.parse_file_exn(source);
     const pem = await fabric.getUserCertificate();
     const userId = id.of_x509_certificate_exn(pem);
     db = logicService.create(prg, userId);
   } catch (err) {
     console.log("Parsing error at line " + err.line + ", column " + err.column);
+    console.log(err);
     return;
   }
 

@@ -4,12 +4,24 @@ exception Error of {
     column : int
   }
 
-val parse_literal_exn : string -> Default.literal
+module Datalog : sig
 
-val parse_clause_exn : string -> Default.clause
+  val parse_literal_exn : string -> Default.literal
 
-val parse_file_exn : string -> Default.clause list
+  val parse_clause_exn : string -> Default.clause
 
-val string_of_literal : Default.literal -> string
+  val parse_file_exn : string -> Default.clause list
 
-val string_of_clause : Default.clause -> string
+  val string_of_literal : Default.literal -> string
+
+  val string_of_clause : Default.clause -> string
+
+end
+
+module Cyberlogic : sig
+
+  val short_literal : Cyberlogic.literal -> string
+
+  val short_clause : Cyberlogic.clause -> string
+
+end 
