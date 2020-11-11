@@ -15,8 +15,8 @@ module Name = struct
   type jsonName = jsonAttributeAndValue array
 
   external make_exn :  string -> t = "Name" [@@bs.new] [@@bs.module("@peculiar/x509")]
-  external to_json :  t -> jsonName = "toJSON" [@@bs.send]
   external to_string :  t -> string = "toString" [@@bs.send]
+  external to_json :  t -> jsonName = "toJSON" [@@bs.send]
 
   let get (name : t) (key : string) : string option =
     let json = to_json name in

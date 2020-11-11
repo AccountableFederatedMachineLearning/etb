@@ -67,6 +67,11 @@ async function main() {
     return res.send(response)
   })
 
+  app.put('/goals/:goal', async (req, res) => {
+    const response = await rest.goal_put(db, req.params.goal);
+    return res.send(response)
+  })
+
   app.listen(port, async () => {
     console.log(`Listening at http://localhost:${port}`);
     const contract = await fabric.connect();

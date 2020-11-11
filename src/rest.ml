@@ -17,3 +17,20 @@ let facts_put db fact =
     let msg = Printf.sprintf "%s at line %i, column %i" 
         err.msg err.line err.column in
     Js.Promise.resolve msg
+
+
+let goal_put db fact = 
+  try 
+    let lit = Syntax.Datalog.parse_literal_exn fact in    
+    LogicService.goal db lit 
+    |> Js.Promise.then_ (fun () ->
+        Js.Promise.resolve ("Ok, added goal '" ^ (Syntax.Datalog.string_of_literal lit) ^ "'")
+      )
+  with
+  | Syntax.Error err ->
+    let msg = Printf.sprintf "%s at line %i, column %i" 
+        err.msg err.line err.column in
+    Js.Promise.resolve msg
+  | err ->
+    Js.log(err);
+    failwith "d"    

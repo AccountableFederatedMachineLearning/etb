@@ -32,6 +32,10 @@ val db_add_fact : ?expl:Default.explanation -> db -> literal -> unit
 val db_fold : ('a -> clause -> 'a) -> 'a -> db -> 'a
 (** Fold on all clauses in the current DB (including fixpoint) *)
 
+val db_goal : db -> literal -> unit
+(** Add a goal to the DB. The goal is used to trigger backward chaining
+    (calling goal handlers that could help solve the goal) *)
+
 type fact_handler = literal -> unit
 type goal_handler = literal -> unit
 

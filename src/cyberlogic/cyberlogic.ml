@@ -45,11 +45,8 @@ let principal_from_term c =
 
 (** Literals *)
 
-let mk_open_literal s color_tm principal_tm args =
-  Default.mk_literal s (color_tm :: principal_tm :: args)
-
 let mk_literal s color principal args =
-  mk_open_literal s (color_term color) (principal_term principal) args
+  Default.mk_literal s (color_term color :: principal_term principal :: args)
 
 let color literal =
   match open_literal literal with
@@ -102,6 +99,9 @@ let db_add =
 
 let db_add_fact = 
   Default.db_add_fact
+
+let db_goal = 
+  Default.db_goal
 
 let db_fold =
   Default.db_fold

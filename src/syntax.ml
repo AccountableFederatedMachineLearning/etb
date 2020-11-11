@@ -47,7 +47,8 @@ end
 
 module Cyberlogic = struct
 
-  (* Parsing *)
+  (* Parsing: 
+     The following code is taken from datalog/default.ml *)
 
   module A = Clast
 
