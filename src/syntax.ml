@@ -89,7 +89,7 @@ module Cyberlogic = struct
     | A.Atom (s, args) ->
       let s = Default.StringSymbol.make s in
       let args = List.map (term_of_ast ~tbl) args in
-      mk_literal s col id args
+      Literal.make s col id args
     | A.Attestation (loc, p, s, args) ->
       let s = Default.StringSymbol.make s in
       let args = List.map (term_of_ast ~tbl) args in
@@ -100,7 +100,7 @@ module Cyberlogic = struct
                     column = loc.A.column; 
                     msg = "Identity '" ^ p ^ "' used but not defined" })
         | Some id -> id in
-      mk_literal s col id args
+      Literal.make s col id args
 
   let clause_of_ast id defs c = match c with
     | A.Clause (a, l) ->
@@ -108,7 +108,7 @@ module Cyberlogic = struct
       let a = literal_of_ast id defs Cyberlogic.Yellow ~tbl a in
       let l = List.map (fun x -> let col = Cyberlogic.ColorVar(nextvar ~tbl ()) in 
                          literal_of_ast id defs col ~tbl x) l in
-      mk_clause a l
+      Clause.make a l
 
 (*
   let query_of_ast id defs q = match q with
@@ -146,27 +146,27 @@ module Cyberlogic = struct
   (* Printing *)
 
   let short_literal literal =
-    let ansi_color = match color literal with 
+    let ansi_color = match Literal.color literal with 
       | Yellow -> "\027[0;33m"
       | Green -> "\027[0;32m"
       | ColorVar _ -> "" in
     let ansi_default_color = "\027[0;39m" in
-    let color_string = match color literal with 
+    let color_string = match Literal.color literal with 
       | Yellow -> "yellow"
       | Green -> "green"
       | ColorVar i when i >= 0 -> "X" ^ (string_of_int i)
       | ColorVar i -> "Y" ^ (string_of_int (-i)) in
-    let principal_string = match Id.Name.get (principal literal).subject "CN" with
+    let principal_string = match Id.Name.get (Literal.principal literal).subject "CN" with
       | None -> "<unknown>"
       | Some n -> n in
-    let claim_string = Datalog.string_of_literal (plain_literal literal) in
+    let claim_string = Datalog.string_of_literal (Literal.plain_literal literal) in
     ansi_color ^
     principal_string ^ " says " ^ claim_string ^ " [" ^ color_string ^ "]" ^
     ansi_default_color
 
   let short_clause clause =
-    let h = short_literal (Cyberlogic.head clause) in
-    let bs = List.map short_literal (Cyberlogic.body clause) in
+    let h = short_literal (Clause.head clause) in
+    let bs = List.map short_literal (Clause.body clause) in
     match bs with 
     | [] -> h
     | (b :: rest) -> List.fold_left (fun s l -> s ^ ", " ^ l) 

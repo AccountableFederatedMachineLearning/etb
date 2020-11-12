@@ -5,10 +5,6 @@ type color =
   | Green
   | ColorVar of int
 
-type literal = Default.literal
-type clause = Default.clause
-
-
 (** Colors encoded as constant terms *)
 
 let color_term c = 
@@ -45,41 +41,68 @@ let principal_from_term c =
 
 (** Literals *)
 
-let mk_literal s color principal args =
-  Default.mk_literal s (color_term color :: principal_term principal :: args)
+module Literal = struct
 
-let color literal =
-  match open_literal literal with
-  | (_, []) -> failwith "literal has no color"
-  | (_, (a :: _)) -> color_from_term a
+  type t = Default.literal
 
-let principal literal =
-  match open_literal literal with
-  | (_, []) -> failwith "literal has no color"
-  | (_, [_]) -> failwith "literal has no princial"
-  | (_, (_ :: p :: _)) -> principal_from_term p
+  type t_json = {
+    color : color;
+    principal : Id.t_json;
+    literal : string
+  }
 
-let plain_literal literal =
-  match open_literal literal with
-  | (_, []) 
-  | (_, [_]) -> failwith "plain_literal may only be applied to encoded literals"
-  | (s, c :: _ :: args) ->
-    assert (is_color_term c);
-    Default.mk_literal s args
+  let make s color principal args =
+    Default.mk_literal s (color_term color :: principal_term principal :: args)
+
+  let color literal =
+    match open_literal literal with
+    | (_, []) -> failwith "literal has no color"
+    | (_, (a :: _)) -> color_from_term a
+
+  let principal literal =
+    match open_literal literal with
+    | (_, []) -> failwith "literal has no color"
+    | (_, [_]) -> failwith "literal has no princial"
+    | (_, (_ :: p :: _)) -> principal_from_term p
+
+  let plain_literal literal =
+    match open_literal literal with
+    | (_, []) 
+    | (_, [_]) -> failwith "plain_literal may only be applied to encoded literals"
+    | (s, c :: _ :: args) ->
+      assert (is_color_term c);
+      Default.mk_literal s args
+
+  let to_json literal = {
+    color = color literal;
+    principal = Id.to_json (principal literal);
+    literal =      
+      let p = plain_literal literal in
+      Default.pp_literal Format.str_formatter p;
+      Format.flush_str_formatter ()
+  }
+
+end
 
 (** Clauses *)
 
-let mk_clause = Default.mk_clause
+module Clause = struct 
 
-let head clause = Default.of_soft_lit (fst (Default.open_clause clause))
-let body clause = List.map Default.of_soft_lit (snd (Default.open_clause clause))
+  type t = Default.clause
 
-let is_fact =
-  Default.is_fact
+  let make = Default.mk_clause
 
-let debug_clause clause =
-  pp_clause Format.str_formatter clause;
-  Js.Console.log(Format.flush_str_formatter ())
+  let head clause = Default.of_soft_lit (fst (Default.open_clause clause))
+  let body clause = List.map Default.of_soft_lit (snd (Default.open_clause clause))
+
+  let is_fact =
+    Default.is_fact
+
+  let debug_clause clause =
+    pp_clause Format.str_formatter clause;
+    Js.Console.log(Format.flush_str_formatter ())
+
+end
 
 (*
 let pretty_string literal =

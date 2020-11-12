@@ -1,7 +1,7 @@
 
 let facts_get db =
   let facts = LogicService.all_facts db in
-  let json_facts = List.map (fun clause -> Js.Json.string (Syntax.Cyberlogic.short_literal (Cyberlogic.head clause))) facts in
+  let json_facts = List.map (fun clause -> Js.Json.string (Syntax.Cyberlogic.short_literal (Cyberlogic.Clause.head clause))) facts in
   let json_array = Js.Json.array (Array.of_list json_facts) in
   Js.Promise.resolve json_array
 

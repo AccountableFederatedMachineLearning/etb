@@ -29,17 +29,17 @@ let flush_queue t : unit Js.Promise.t =
 
 (* Fact handler to queue all quellow facts *)
 let queue_yellow_facthandler t : Cyberlogic.fact_handler =
-  fun (fact : Cyberlogic.literal) ->
+  fun (fact : Cyberlogic.Literal.t) ->
   Log.trace("adding fact '" ^ (Syntax.Cyberlogic.short_literal fact) ^ "' to db");
-  if (Cyberlogic.color fact = Yellow) then 
+  if (Cyberlogic.Literal.color fact = Yellow) then 
     begin
       Log.trace("queueing " ^ Syntax.Cyberlogic.short_literal fact);
-      t.log_queue <- Cyberlogic.plain_literal fact :: t.log_queue
+      t.log_queue <- Cyberlogic.Literal.plain_literal fact :: t.log_queue
     end
 
 (* Fact handler to queue all quellow facts *)
-let goalhandler t : Cyberlogic.goal_handler =
-  fun (goal : Cyberlogic.literal) ->
+let goalhandler _ : Cyberlogic.goal_handler =
+  fun (goal : Cyberlogic.Literal.t) ->
   Log.trace("goal '" ^ (Syntax.Cyberlogic.short_literal goal) ^ "'")
 
 module ClaimEvent = struct
@@ -77,7 +77,7 @@ let claim_event_listener t (payload: string): unit Js.Promise.t =
      let id = Id.of_DNs_exn (claim_event.subjectID) (claim_event.issuerID) in
      let plain_literal = Syntax.Datalog.parse_literal_exn claim_event.claim in
      let (s, args) = Default.open_literal plain_literal in
-     let encoded_literal = Cyberlogic.mk_literal s Green id args in
+     let encoded_literal = Cyberlogic.Literal.make s Green id args in
      Cyberlogic.db_add_fact t.db encoded_literal
    with _ ->
      Log.trace("Error when adding '" ^ payload ^ "'")
@@ -101,19 +101,19 @@ let create id clauses =
 (* TODO: need to check that it's ground *)
 let add_fact t fact =  
   let (s, args) = open_literal fact in
-  let yellow_fact = Cyberlogic.mk_literal s Yellow t.id args in
+  let yellow_fact = Cyberlogic.Literal.make s Yellow t.id args in
   (* TODO *)
-  if not (Cyberlogic.db_mem t.db (Cyberlogic.mk_clause yellow_fact [])) then
+  if not (Cyberlogic.db_mem t.db (Cyberlogic.Clause.make yellow_fact [])) then
     Cyberlogic.db_add_fact t.db yellow_fact;
   flush_queue t
 
 let all_facts t =
   Cyberlogic.db_fold (fun facts clause ->
-      if Cyberlogic.is_fact clause then clause :: facts else facts) [] t.db
+      if Cyberlogic.Clause.is_fact clause then clause :: facts else facts) [] t.db
 
 let goal t goal =
   let (s, args) = open_literal goal in
-  let yellow_goal = Cyberlogic.mk_literal s Yellow t.id args in
+  let yellow_goal = Cyberlogic.Literal.make s Yellow t.id args in
   Cyberlogic.db_goal t.db yellow_goal;
   flush_queue t
 

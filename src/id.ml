@@ -12,11 +12,11 @@ module Name = struct
   type t
 
   type jsonAttributeAndValue = (string array) Js.Dict.t
-  type jsonName = jsonAttributeAndValue array
+  type t_json = jsonAttributeAndValue array
 
   external make_exn :  string -> t = "Name" [@@bs.new] [@@bs.module("@peculiar/x509")]
   external to_string :  t -> string = "toString" [@@bs.send]
-  external to_json :  t -> jsonName = "toJSON" [@@bs.send]
+  external to_json :  t -> t_json = "toJSON" [@@bs.send]
 
   let get (name : t) (key : string) : string option =
     let json = to_json name in
@@ -48,14 +48,22 @@ let of_x509_certificate_exn (pem : string) : t =
 let to_string (id : t) : string =
   Name.to_string id.subject ^ "#" ^ Name.to_string id.issuer
 
-exception Id_Format
-
 let from_string_exn (s : string) : t =
   match String.split_on_char '#' s with
   | [s; i] -> { subject = Name.make_exn s;
                 issuer = Name.make_exn i
               }
-  | _ -> raise Id_Format
+  | _ -> failwith "from_string"
+
+type t_json = {
+  subject : Name.t_json;
+  issuer : Name.t_json
+}
+
+let to_json (id : t) : t_json = {
+  subject = Name.to_json id.subject;
+  issuer = Name.to_json id.issuer
+}
 
 (*
 let _ =

@@ -5,7 +5,8 @@
     "@peculiar/x509": "^1.0.6",
     "bs-express": "^1.0.2",
     "fabric-network": "^2.2.3",
-    "node-forge": "^0.10.0"
+    "node-forge": "^0.10.0",
+    "socket.io": "^3.0.1"
   },
   "scripts": {
     "clean": "bsb -clean-world",

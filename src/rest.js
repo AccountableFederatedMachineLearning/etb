@@ -6,6 +6,8 @@ const id = require('./id.bs')
 const logicService = require('./logicService.bs')
 const rest = require('./rest.bs')
 const app = express()
+var http = require('http').createServer(app);
+var io = require('socket.io')(http);
 
 async function main() {
   var args = process.argv.slice(2);
@@ -54,7 +56,7 @@ async function main() {
   // Register REST endpoints
 
   app.get('/', (req, res) => {
-    res.send("Okay");
+    res.sendFile(__dirname + "/index.html");
   })
 
   app.get('/facts', async (req, res) => {
@@ -72,7 +74,20 @@ async function main() {
     return res.send(response)
   })
 
-  app.listen(port, async () => {
+  io.on('connection', (socket) => {
+    console.log('a user connected');
+    let msg = "dsd";
+    io.emit('test', msg);
+    socket.on('test', (msg) => {
+      io.emit('test', msg);
+    });
+  });
+
+  // http.listen(3000, () => {
+  //   console.log('listening on *:3000');
+  // });
+
+  http.listen(port, async () => {
     console.log(`Listening at http://localhost:${port}`);
     const contract = await fabric.connect();
     logicService.connect_to_contract(db, contract);
