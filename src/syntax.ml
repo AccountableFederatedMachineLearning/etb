@@ -47,8 +47,9 @@ end
 
 module Cyberlogic = struct
 
-  (* Parsing: 
-     The following code is taken from datalog/default.ml *)
+  (* Parsing *)
+
+  (* The following parsing code is adapted from datalog/default.ml *)
 
   module A = Clast
 
@@ -145,6 +146,11 @@ module Cyberlogic = struct
   (* Printing *)
 
   let short_literal literal =
+    let ansi_color = match color literal with 
+      | Yellow -> "\027[0;33m"
+      | Green -> "\027[0;32m"
+      | ColorVar _ -> "" in
+    let ansi_default_color = "\027[0;39m" in
     let color_string = match color literal with 
       | Yellow -> "yellow"
       | Green -> "green"
@@ -154,7 +160,9 @@ module Cyberlogic = struct
       | None -> "<unknown>"
       | Some n -> n in
     let claim_string = Datalog.string_of_literal (plain_literal literal) in
-    principal_string ^ " says " ^ claim_string ^ " [" ^ color_string ^ "]"
+    ansi_color ^
+    principal_string ^ " says " ^ claim_string ^ " [" ^ color_string ^ "]" ^
+    ansi_default_color
 
   let short_clause clause =
     let h = short_literal (Cyberlogic.head clause) in

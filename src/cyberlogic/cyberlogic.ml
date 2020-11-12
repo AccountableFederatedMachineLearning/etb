@@ -75,7 +75,11 @@ let head clause = Default.of_soft_lit (fst (Default.open_clause clause))
 let body clause = List.map Default.of_soft_lit (snd (Default.open_clause clause))
 
 let is_fact =
-  Default.is_fact 
+  Default.is_fact
+
+let debug_clause clause =
+  pp_clause Format.str_formatter clause;
+  Js.Console.log(Format.flush_str_formatter ())
 
 (*
 let pretty_string literal =
@@ -93,6 +97,9 @@ type db = Default.db
 
 let db_create = 
   Default.db_create
+
+let db_mem =
+  Default.db_mem
 
 let db_add =
   Default.db_add
@@ -117,3 +124,6 @@ let db_subscribe_all_facts =
 
 let db_subscribe_goal =
   Default.db_subscribe_goal
+
+let db_explanations =
+  Default.db_explanations

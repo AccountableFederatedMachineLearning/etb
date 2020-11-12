@@ -102,7 +102,9 @@ let create id clauses =
 let add_fact t fact =  
   let (s, args) = open_literal fact in
   let yellow_fact = Cyberlogic.mk_literal s Yellow t.id args in
-  Cyberlogic.db_add_fact t.db yellow_fact;
+  (* TODO *)
+  if not (Cyberlogic.db_mem t.db (Cyberlogic.mk_clause yellow_fact [])) then
+    Cyberlogic.db_add_fact t.db yellow_fact;
   flush_queue t
 
 let all_facts t =

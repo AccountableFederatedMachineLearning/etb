@@ -16,11 +16,16 @@ val head : clause -> literal
 val body : clause -> literal list
 val is_fact : clause -> bool
 
+val debug_clause : clause -> unit
+
 (* Expose interface of bottom-up *)
 type db
 
 val db_create : unit -> db
 (** Create a DB *)
+
+val db_mem : db -> clause -> bool
+(** Is the clause member of the DB? *)
 
 val db_add : ?expl:Default.explanation -> db -> clause -> unit
 (** Add the clause/fact to the DB as an axiom, updating fixpoint.
@@ -42,3 +47,6 @@ type goal_handler = literal -> unit
 val db_subscribe_fact : db -> Default.symbol -> fact_handler -> unit
 val db_subscribe_all_facts : db -> fact_handler -> unit
 val db_subscribe_goal : db -> goal_handler -> unit
+
+val db_explanations : db -> clause -> Default.explanation list
+(** Get all the explanations that explain why this clause is true *)
