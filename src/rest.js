@@ -1,6 +1,7 @@
 const fs = require('fs')
 const express = require('express')
 const fabric = require('./fabric')
+const cyberlogic = require('./cyberlogic/cyberlogic.bs')
 const syntax = require('./syntax.bs')
 const id = require('./id.bs')
 const logicService = require('./logicService.bs')
@@ -8,6 +9,8 @@ const rest = require('./rest.bs')
 const app = express()
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
+
+const fact_event = 'fact';
 
 async function main() {
   var args = process.argv.slice(2);
@@ -55,7 +58,7 @@ async function main() {
 
   // Register REST endpoints
 
-  app.get('/', (req, res) => {
+  app.get('/', async (req, res) => {
     res.sendFile(__dirname + "/index.html");
   })
 
@@ -74,14 +77,18 @@ async function main() {
     return res.send(response)
   })
 
-  io.on('connection', (socket) => {
+  io.on('connection', async (socket) => {
     console.log('a user connected');
-    let msg = "dsd";
-    io.emit('test', msg);
-    socket.on('test', (msg) => {
-      io.emit('test', msg);
-    });
+    let facts = await rest.facts_get(db);
+    for (const fact of facts) {
+      io.emit(fact_event, fact);
+    }
   });
+
+  logicService.add_fact_listener(db, (fact) => {
+    let json_fact = cyberlogic.Literal.to_json(fact);
+    io.emit(fact_event, json_fact);
+  })
 
   // http.listen(3000, () => {
   //   console.log('listening on *:3000');

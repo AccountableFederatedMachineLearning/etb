@@ -46,7 +46,7 @@ module Literal = struct
   type t = Default.literal
 
   type t_json = {
-    color : color;
+    color : string;
     principal : Id.t_json;
     literal : string
   }
@@ -74,7 +74,13 @@ module Literal = struct
       Default.mk_literal s args
 
   let to_json literal = {
-    color = color literal;
+    color = 
+      begin
+        match color literal with
+        | Yellow -> "yellow"
+        | Green -> "green"
+        | ColorVar _ -> "black"
+      end;
     principal = Id.to_json (principal literal);
     literal =      
       let p = plain_literal literal in

@@ -8,7 +8,7 @@ module Literal : sig
   type t
 
   type t_json = {
-    color : color;
+    color : string;
     principal : Id.t_json;
     literal : string
   }

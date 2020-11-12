@@ -10,32 +10,33 @@ type t = {
   db : Cyberlogic.db;
   mutable id : Id.t;
   mutable contract : Fabric.contract option;
-  mutable log_queue : Default.literal list 
+  mutable pending : Fabric.contract -> unit Js.Promise.t;
 }
 
+let add_pending t (action : Fabric.contract -> unit Js.Promise.t) =
+  let pending = t.pending in
+  t.pending <- fun c -> pending c |> Js.Promise.then_ (fun () -> action c)
+
 (* Log all queued messages to the chain (in unspecified order) *)
-let flush_queue t : unit Js.Promise.t =
+let flush_pending t : unit Js.Promise.t =
   match t.contract with
   | None -> Js.Promise.resolve ()
-  | Some contract ->
-    let messages = t.log_queue in
-    t.log_queue <- [];
-    let log literal = 
-      let m = Syntax.Datalog.string_of_literal literal in
-      Log.trace("logging " ^ m); 
-      Fabric.log contract m in      
-    Js.Promise.all (messages |> List.map log |> Array.of_list)
-    |> Js.Promise.then_ (fun _ -> Js.Promise.resolve ())
+  | Some c ->
+    let p = t.pending c in
+    t.pending <- (fun _ -> Js.Promise.resolve ());
+    p
 
 (* Fact handler to queue all quellow facts *)
 let queue_yellow_facthandler t : Cyberlogic.fact_handler =
   fun (fact : Cyberlogic.Literal.t) ->
   Log.trace("adding fact '" ^ (Syntax.Cyberlogic.short_literal fact) ^ "' to db");
-  if (Cyberlogic.Literal.color fact = Yellow) then 
-    begin
-      Log.trace("queueing " ^ Syntax.Cyberlogic.short_literal fact);
-      t.log_queue <- Cyberlogic.Literal.plain_literal fact :: t.log_queue
-    end
+  match Cyberlogic.Literal.color fact with
+  | Yellow ->
+    Log.trace("queueing log(" ^ Syntax.Cyberlogic.short_literal fact ^ ")");
+    add_pending t (fun contract -> 
+        Fabric.log contract Cyberlogic.Literal.((to_json fact).literal))
+  (* t.log_queue <- Cyberlogic.Literal.plain_literal fact :: t.log_queue*)
+  | _ -> ()
 
 (* Fact handler to queue all quellow facts *)
 let goalhandler _ : Cyberlogic.goal_handler =
@@ -82,14 +83,14 @@ let claim_event_listener t (payload: string): unit Js.Promise.t =
    with _ ->
      Log.trace("Error when adding '" ^ payload ^ "'")
   );
-  flush_queue t
+  flush_pending t
 
 let create id clauses = 
   let t = { 
     db = Cyberlogic.db_create ();
     id = id;
     contract = None;
-    log_queue = []
+    pending = fun _ -> Js.Promise.resolve ()
   } in
   Cyberlogic.db_subscribe_all_facts t.db (queue_yellow_facthandler t);
   Cyberlogic.db_subscribe_goal t.db (goalhandler t);
@@ -105,7 +106,7 @@ let add_fact t fact =
   (* TODO *)
   if not (Cyberlogic.db_mem t.db (Cyberlogic.Clause.make yellow_fact [])) then
     Cyberlogic.db_add_fact t.db yellow_fact;
-  flush_queue t
+  flush_pending t
 
 let all_facts t =
   Cyberlogic.db_fold (fun facts clause ->
@@ -115,7 +116,7 @@ let goal t goal =
   let (s, args) = open_literal goal in
   let yellow_goal = Cyberlogic.Literal.make s Yellow t.id args in
   Cyberlogic.db_goal t.db yellow_goal;
-  flush_queue t
+  flush_pending t
 
 (*
 let register_service t symbol handler =
@@ -129,5 +130,11 @@ let connect_to_contract t contract =
   t.contract <- Some contract;
   Fabric.add_contract_listener contract (claim_event_listener t)
   |> Js.Promise.then_ (fun () -> 
-      flush_queue t
+      flush_pending t
     )
+
+let add_fact_listener t (listener : Cyberlogic.Literal.t -> unit Js.Promise.t) = 
+  Cyberlogic.db_subscribe_all_facts t.db (fun fact -> 
+      add_pending t (fun _contract -> listener fact)
+    )
+
