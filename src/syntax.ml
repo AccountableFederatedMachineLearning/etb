@@ -156,7 +156,7 @@ module Cyberlogic = struct
       | Green -> "green"
       | ColorVar i when i >= 0 -> "X" ^ (string_of_int i)
       | ColorVar i -> "Y" ^ (string_of_int (-i)) in
-    let principal_string = match Id.Name.get (Literal.principal literal).subject "CN" with
+    let principal_string = match Id.DN.get (Literal.principal literal).subject "CN" with
       | None -> "<unknown>"
       | Some n -> n in
     let claim_string = Datalog.string_of_literal (Literal.plain_literal literal) in

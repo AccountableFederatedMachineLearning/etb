@@ -214,8 +214,8 @@ let yyact = [|
     Obj.repr(
 # 74 "clparser.mly"
      ( (without_quotes _1, 
-        Id.{ subject = Name.make_exn (without_quotes _5);
-             issuer = Name.make_exn (without_quotes _8)
+        Id.{ subject = DN.make_exn (without_quotes _5);
+             issuer = DN.make_exn (without_quotes _8)
         })
      )
 # 222 "clparser.ml"

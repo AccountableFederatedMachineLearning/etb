@@ -10,32 +10,38 @@ type t = {
   db : Cyberlogic.db;
   mutable id : Id.t;
   mutable contract : Fabric.contract option;
-  mutable pending : Fabric.contract -> unit Js.Promise.t;
+  mutable pending : (unit -> unit Js.Promise.t) list;
 }
 
-let add_pending t (action : Fabric.contract -> unit Js.Promise.t) =
-  let pending = t.pending in
-  t.pending <- fun c -> pending c |> Js.Promise.then_ (fun () -> action c)
+let run_later t (action : unit -> unit Js.Promise.t) =
+  t.pending <- action :: t.pending
 
 (* Log all queued messages to the chain (in unspecified order) *)
 let flush_pending t : unit Js.Promise.t =
-  match t.contract with
-  | None -> Js.Promise.resolve ()
-  | Some c ->
-    let p = t.pending c in
-    t.pending <- (fun _ -> Js.Promise.resolve ());
-    p
+  let pending = t.pending in
+  t.pending <- [];
+  let promises = List.map (fun action -> action ()) pending in
+  Js.Promise.all (Array.of_list promises)
+  |> Js.Promise.then_ (fun _ ->
+      Js.Promise.resolve ()
+    )
 
 (* Fact handler to queue all quellow facts *)
-let queue_yellow_facthandler t : Cyberlogic.fact_handler =
+let log_yellow_facts t : Cyberlogic.fact_handler =
   fun (fact : Cyberlogic.Literal.t) ->
   Log.trace("adding fact '" ^ (Syntax.Cyberlogic.short_literal fact) ^ "' to db");
   match Cyberlogic.Literal.color fact with
   | Yellow ->
     Log.trace("queueing log(" ^ Syntax.Cyberlogic.short_literal fact ^ ")");
-    add_pending t (fun contract -> 
-        Fabric.log contract Cyberlogic.Literal.((to_json fact).literal))
-  (* t.log_queue <- Cyberlogic.Literal.plain_literal fact :: t.log_queue*)
+    let rec log_action () = 
+      match t.contract with
+      | Some contract ->
+        Fabric.log contract Cyberlogic.Literal.((to_json fact).literal) 
+      | None -> 
+        (* If no contract is installed, log the action again for later execution *)
+        run_later t log_action;
+        Js.Promise.resolve () in
+    run_later t log_action
   | _ -> ()
 
 (* Fact handler to queue all quellow facts *)
@@ -56,7 +62,7 @@ module ClaimEvent = struct
     | Some o -> 
       let get_string key = 
         match Js_dict.get o key with
-        | Some v -> 
+        | Some v ->
           begin 
             match Js.Json.decodeString v with
             | Some s -> s
@@ -75,7 +81,7 @@ let claim_event_listener t (payload: string): unit Js.Promise.t =
   (try
      let open ClaimEvent in
      let claim_event = ClaimEvent.parse_exn payload in
-     let id = Id.of_DNs_exn (claim_event.subjectID) (claim_event.issuerID) in
+     let id = Id.of_DNs_exn ~subjectDN:(claim_event.subjectID) ~issuerDN:(claim_event.issuerID) in
      let plain_literal = Syntax.Datalog.parse_literal_exn claim_event.claim in
      let (s, args) = Default.open_literal plain_literal in
      let encoded_literal = Cyberlogic.Literal.make s Green id args in
@@ -90,9 +96,9 @@ let create id clauses =
     db = Cyberlogic.db_create ();
     id = id;
     contract = None;
-    pending = fun _ -> Js.Promise.resolve ()
+    pending = []
   } in
-  Cyberlogic.db_subscribe_all_facts t.db (queue_yellow_facthandler t);
+  Cyberlogic.db_subscribe_all_facts t.db (log_yellow_facts t);
   Cyberlogic.db_subscribe_goal t.db (goalhandler t);
   clauses |> List.iter (fun clause ->
       Log.trace (Syntax.Cyberlogic.short_clause clause);
@@ -135,6 +141,5 @@ let connect_to_contract t contract =
 
 let add_fact_listener t (listener : Cyberlogic.Literal.t -> unit Js.Promise.t) = 
   Cyberlogic.db_subscribe_all_facts t.db (fun fact -> 
-      add_pending t (fun _contract -> listener fact)
+      run_later t (fun _contract -> listener fact)
     )
-

@@ -72,8 +72,8 @@ abbrevs:
 abbrev:
   | SINGLE_QUOTED COLON SUBJECT COLON SINGLE_QUOTED ISSUER COLON SINGLE_QUOTED
      { (without_quotes $1, 
-        Id.{ subject = Name.make_exn (without_quotes $5);
-             issuer = Name.make_exn (without_quotes $8)
+        Id.{ subject = DN.make_exn (without_quotes $5);
+             issuer = DN.make_exn (without_quotes $8)
         })
      }
 

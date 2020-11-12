@@ -1,18 +1,18 @@
 (* Ad-hoc binding for @peculiar/x509 *)
 
-module Certificate = struct
+module X509Certificate = struct
   type t
 
   external make_exn :  string -> t = "X509Certificate" [@@bs.new] [@@bs.module("@peculiar/x509")]
-  external issuer :  t -> string = "issuer" [@@bs.get]
-  external subject :  t -> string = "subject" [@@bs.get]
+  external issuerDN :  t -> string = "issuer" [@@bs.get]
+  external subjectDN :  t -> string = "subject" [@@bs.get]
 end
 
-module Name = struct
+module DN = struct
   type t
 
-  type jsonAttributeAndValue = (string array) Js.Dict.t
   type t_json = jsonAttributeAndValue array
+  and jsonAttributeAndValue = (string array) Js.Dict.t
 
   external make_exn :  string -> t = "Name" [@@bs.new] [@@bs.module("@peculiar/x509")]
   external to_string :  t -> string = "toString" [@@bs.send]
@@ -25,44 +25,45 @@ module Name = struct
         | None -> 
           begin match Js.Dict.get d key with
             | None -> None
-            | Some vs -> if Array.length vs > 0 then Some vs.(0) else None
+            | Some vs -> if Array.length vs > 0 then Some vs.(0) else None            
           end
         | Some v -> Some v) None json 
 end
 
 
 type t = {
-  subject : Name.t;
-  issuer : Name.t
+  subject : DN.t;
+  issuer : DN.t
 }
 
-let of_DNs_exn (subjectDN : string) (issuerDN : string) : t =
-  { subject = Name.make_exn subjectDN;
-    issuer = Name.make_exn (issuerDN)
+let of_DNs_exn ~subjectDN ~issuerDN : t =
+  { subject = DN.make_exn subjectDN;
+    issuer = DN.make_exn (issuerDN)
   }
 
 let of_x509_certificate_exn (pem : string) : t =
-  let cert = Certificate.make_exn pem in
-  of_DNs_exn (Certificate.subject cert) (Certificate.issuer cert)
+  let cert = X509Certificate.make_exn pem in
+  of_DNs_exn ~subjectDN:(X509Certificate.subjectDN cert) 
+    ~issuerDN:(X509Certificate.issuerDN cert)
 
 let to_string (id : t) : string =
-  Name.to_string id.subject ^ "#" ^ Name.to_string id.issuer
+  DN.to_string id.subject ^ "#" ^ DN.to_string id.issuer
 
 let from_string_exn (s : string) : t =
   match String.split_on_char '#' s with
-  | [s; i] -> { subject = Name.make_exn s;
-                issuer = Name.make_exn i
+  | [s; i] -> { subject = DN.make_exn s;
+                issuer = DN.make_exn i
               }
   | _ -> failwith "from_string"
 
 type t_json = {
-  subject : Name.t_json;
-  issuer : Name.t_json
+  subject : DN.t_json;
+  issuer : DN.t_json
 }
 
 let to_json (id : t) : t_json = {
-  subject = Name.to_json id.subject;
-  issuer = Name.to_json id.issuer
+  subject = DN.to_json id.subject;
+  issuer = DN.to_json id.issuer
 }
 
 (*
