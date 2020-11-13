@@ -17,15 +17,16 @@ async function main() {
 
   // First argument must be source file
   if (args.length < 1) {
-    console.error("Usage: main <file.dl> [port]");
+    console.error("Usage: main <userId> <file.dl> [port]");
     process.exit(1)
   }
-  const sourceFile = args[0];
+  const walletId = args[0];
+  const sourceFile = args[1];
 
   // Second argument may be port
-  var port = 3000
-  if (args.length > 1) {
-    port = args[1]
+  var port = 5000
+  if (args.length > 2) {
+    port = args[2]
   }
 
   // Load source file
@@ -43,7 +44,7 @@ async function main() {
   // Parse and construct the logic service
   var db;
   try {
-    const pem = await fabric.getUserCertificate();
+    const pem = await fabric.getUserCertificate(walletId);
     const userId = id.of_x509_certificate_exn(pem);
     const prg = syntax.Cyberlogic.parse_file_exn(userId, source);
     db = logicService.create(userId, prg);
@@ -96,7 +97,7 @@ async function main() {
 
   http.listen(port, async () => {
     console.log(`Listening at http://localhost:${port}`);
-    const contract = await fabric.connect();
+    const contract = await fabric.connect(walletId);
     logicService.connect_to_contract(db, contract);
   })
 }

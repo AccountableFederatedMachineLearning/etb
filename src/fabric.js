@@ -7,9 +7,9 @@ const walletDirectoryPath = "../H/fabric-samples/asset-transfer-basic/applicatio
 const connectionProfileFileName = "../H/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/connection-org1.json";
 const channelName = "mychannel"
 const chaincodeId = "basic";
-const userId = "appUser";
+// const userId = "appUser";
 
-async function getUserCertificate() {
+async function getUserCertificate(userId) {
   const wallet = await Wallets.newFileSystemWallet(walletDirectoryPath);
   const identity = await wallet.get(userId);
   if (identity && identity.type === 'X.509') {
@@ -18,7 +18,7 @@ async function getUserCertificate() {
   return null;
 }
 
-async function connect() {
+async function connect(userId) {
 
   const connectionProfileJson = (await fs.promises.readFile(connectionProfileFileName)).toString();
   const connectionProfile = JSON.parse(connectionProfileJson);

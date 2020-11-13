@@ -2,24 +2,34 @@
 <html>
 
 <head>
+  <title>Report</title>
+  <style>
+    .yellow {
+      background: yellow;
+    }
+
+    .green {
+      border: solid green;
+    }
+  </style>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 </head>
 
 <body>
 
-  <h1>Live Report</h1>
+  <h1>Report</h1>
 
   <p id="b(200, 4)">If this text has yellow background, then the claim b(200, 4)
     has been proved locally. If the text has a green border, then it is
-    logged on the ledger.</p>
-
+    logged on the ledger.
+  </p>
 
   <h2>Other facts</h2>
 
   <ul id="facts">
   </ul>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
   <script>
     var socket = io();
     socket.on('fact', function (msg) {
@@ -27,12 +37,7 @@
       if (document.getElementById(id) === null) {
         $('#facts').append($(`<li id="${id}">`).text(msg.literal));
       }
-      if (msg.color === 'green') {
-        $(document.getElementById(id)).css({ "border": "solid " + msg.color });
-      }
-      if (msg.color === 'yellow') {
-        $(document.getElementById(id)).css({ "background": msg.color });
-      }
+      $(document.getElementById(id)).addClass(msg.color);
     });
   </script>
 </body>
