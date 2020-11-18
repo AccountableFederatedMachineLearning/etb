@@ -1,3 +1,13 @@
+Summarize 'old' approach
+
+Summarize proposal:
+
+- Interface of components
+
+![Alt text](./images/test.drawio.svg)
+
+==
+
 Do we need a blockchain?
 
 Roles:

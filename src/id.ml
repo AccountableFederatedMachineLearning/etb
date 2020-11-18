@@ -3,8 +3,11 @@
 module X509Certificate = struct
   type t
 
-  external make_exn :  string -> t = "X509Certificate" [@@bs.new] [@@bs.module("@peculiar/x509")]
+  external make_exn :  string -> t = 
+    "X509Certificate" [@@bs.new] [@@bs.module("@peculiar/x509")]
+
   external issuerDN :  t -> string = "issuer" [@@bs.get]
+
   external subjectDN :  t -> string = "subject" [@@bs.get]
 end
 
@@ -14,24 +17,27 @@ module DN = struct
   type t_json = jsonAttributeAndValue array
   and jsonAttributeAndValue = (string array) Js.Dict.t
 
-  external make_exn :  string -> t = "Name" [@@bs.new] [@@bs.module("@peculiar/x509")]
+  external make_exn :  string -> t = 
+    "Name" [@@bs.new] [@@bs.module("@peculiar/x509")]
+
   external to_string :  t -> string = "toString" [@@bs.send]
+
   external to_json :  t -> t_json = "toJSON" [@@bs.send]
 
   let get (name : t) (key : string) : string option =
     let json = to_json name in
-    Array.fold_left (fun x d ->
+    Array.fold_left (fun x attrib ->
         match x with
-        | None -> 
-          begin match Js.Dict.get d key with
+        | None ->         
+          begin match Js.Dict.get attrib key with
             | None -> None
             | Some vs -> if Array.length vs > 0 then Some vs.(0) else None            
           end
-        | Some v -> Some v) None json 
+        | Some v -> Some v
+      ) None json 
 end
 
-
-type t = {
+type t = { 
   subject : DN.t;
   issuer : DN.t
 }
@@ -43,7 +49,8 @@ let of_DNs_exn ~subjectDN ~issuerDN : t =
 
 let of_x509_certificate_exn (pem : string) : t =
   let cert = X509Certificate.make_exn pem in
-  of_DNs_exn ~subjectDN:(X509Certificate.subjectDN cert) 
+  of_DNs_exn 
+    ~subjectDN:(X509Certificate.subjectDN cert) 
     ~issuerDN:(X509Certificate.issuerDN cert)
 
 let to_string (id : t) : string =
@@ -51,9 +58,9 @@ let to_string (id : t) : string =
 
 let from_string_exn (s : string) : t =
   match String.split_on_char '#' s with
-  | [s; i] -> { subject = DN.make_exn s;
-                issuer = DN.make_exn i
-              }
+  | [s; i] -> 
+    { subject = DN.make_exn s;
+      issuer = DN.make_exn i }
   | _ -> failwith "from_string"
 
 type t_json = {
@@ -65,16 +72,3 @@ let to_json (id : t) : t_json = {
   subject = DN.to_json id.subject;
   issuer = DN.to_json id.issuer
 }
-
-(*
-let _ =
-  try
-  let pem ="-----BEGIN CERTIFICATE-----\nMIIChDCCAiqgAwIBAgIUPJpyVFxw6rq4urzw0bagRlEJi5swCgYIKoZIzj0EAwIw\ncDELMAkGA1UEBhMCVVMxFzAVBgNVBAgTDk5vcnRoIENhcm9saW5hMQ8wDQYDVQQH\nEwZEdXJoYW0xGTAXBgNVBAoTEG9yZzEuZXhhbXBsZS5jb20xHDAaBgNVBAMTE2Nh\nLm9yZzEuZXhhbXBsZS5jb20wHhcNMjAxMDMxMDY0ODAwWhcNMjExMDMxMDY1MzAw\nWjBEMTAwDQYDVQQLEwZjbGllbnQwCwYDVQQLEwRvcmcxMBIGA1UECxMLZGVwYXJ0\nbWVudDExEDAOBgNVBAMTB2FwcFVzZXIwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNC\nAARuJROMZnVTHyddecaB2t4NybGpTOeWQGzzU2LtVBdBdYobZifsvC38tf2Z3oM8\nfxaPmqnpA4hJMT2/+FZXodTco4HNMIHKMA4GA1UdDwEB/wQEAwIHgDAMBgNVHRMB\nAf8EAjAAMB0GA1UdDgQWBBRzXZOB/KSuRnXbF1Xwsr/b5LmSMTAfBgNVHSMEGDAW\ngBT5UNugs5n3PHAIZ65Wepoqv9jlnjBqBggqAwQFBgcIAQReeyJhdHRycyI6eyJo\nZi5BZmZpbGlhdGlvbiI6Im9yZzEuZGVwYXJ0bWVudDEiLCJoZi5FbnJvbGxtZW50\nSUQiOiJhcHBVc2VyIiwiaGYuVHlwZSI6ImNsaWVudCJ9fTAKBggqhkjOPQQDAgNI\nADBFAiEAov+58a4a76JKDEBtlUepeWY8o5VzysbK5Jd58GlCmLQCIALODVDYVjWz\nmOkjlxfGMW4Vw+KXOjAXfZmj5kn7AEyt\n-----END CERTIFICATE-----\n" in
-  let cert = mk_certificate_exn pem in
-  let name = mk_name_exn "CN=edewd" in
-  Js.log (Js.Dict.keys (to_json name).(0) );
-  Js.log (to_string name);
-  Js.log (subject cert);
-  Js.log (issuer cert)
-  with e -> Js.log(e)
-  *)

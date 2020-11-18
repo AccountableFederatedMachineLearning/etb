@@ -11,9 +11,11 @@
     .green {
       border: solid green;
     }
+
+    #facts {
+      display: inline-block;
+    }
   </style>
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 </head>
 
 <body>
@@ -27,15 +29,20 @@
 
   <h2>Other facts</h2>
 
-  <ul id="facts">
-  </ul>
+  <p>
+    Facts that are not mentioned anywhere are listed here:
+  </p>
 
+  <ul id="facts"> </ul>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
   <script>
     var socket = io();
     socket.on('fact', function (msg) {
       let id = msg.literal;
       if (document.getElementById(id) === null) {
-        $('#facts').append($(`<li id="${id}">`).text(msg.literal));
+        $('#facts').append($('<li>').append($(`<div id="${id}">`).text(msg.principal.subject[1].CN + " attests " + msg.literal)));
       }
       $(document.getElementById(id)).addClass(msg.color);
     });

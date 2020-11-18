@@ -22,6 +22,7 @@ let color_from_term c =
     if eq_term c (color_term Yellow) then Yellow
     else if eq_term c (color_term Green) then Green
     else failwith "term must be yellow, green or variable"
+  | Pair _ -> assert false
 
 let is_color_term c =
   ignore (color_from_term c); (* fails if c is not color *)
@@ -38,6 +39,7 @@ let principal_from_term c =
   | Const p -> 
     let s = StringSymbol.to_string p in
     Id.from_string_exn s
+  | Pair _ -> assert false
 
 (** Literals *)
 
@@ -153,6 +155,9 @@ let db_subscribe_all_facts =
 
 let db_subscribe_goal =
   Default.db_subscribe_goal
+
+let db_explain =
+  Default.db_explain
 
 let db_explanations =
   Default.db_explanations

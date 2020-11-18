@@ -1,6 +1,7 @@
 const fs = require('fs')
 const express = require('express')
 const fabric = require('./fabric')
+const logger = require('./logger.bs')
 const cyberlogic = require('./cyberlogic/cyberlogic.bs')
 const syntax = require('./syntax.bs')
 const id = require('./id.bs')
@@ -33,8 +34,7 @@ async function main() {
   var source;
   try {
     source = fs.readFileSync(sourceFile).toString()
-    console.log("Clauses");
-    console.log(source);
+    logger.debug("Clauses\n" + source);
   } catch (err) {
     console.error("Cannot read file '" + sourceFile + "'.");
     console.error(err.message);
@@ -50,9 +50,9 @@ async function main() {
     db = logicService.create(userId, prg);
   } catch (err) {
     if (err.msg !== undefined && err.line !== undefined && err.column !== undefined) {
-      console.log(err.msg + " at line " + err.line + ", column " + err.column);
+      console.error(err.msg + " at line " + err.line + ", column " + err.column);
     } else {
-      console.log(err);
+      console.error(err);
     }
     return;
   }
@@ -79,7 +79,7 @@ async function main() {
   })
 
   io.on('connection', async (socket) => {
-    console.log('a user connected');
+    logger.info('a user connected');
     let facts = await rest.facts_get(db);
     for (const fact of facts) {
       io.emit(fact_event, fact);
@@ -96,7 +96,7 @@ async function main() {
   // });
 
   http.listen(port, async () => {
-    console.log(`Listening at http://localhost:${port}`);
+    logger.info(`Listening at http://localhost:${port}`);
     const contract = await fabric.connect(walletId);
     logicService.connect_to_contract(db, contract);
   })

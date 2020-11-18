@@ -6,11 +6,11 @@
 module A = AST
 
 module StringSymbol = BottomUp.Hashcons(struct
-  type t = string
-  let equal (a:t) b = String.equal a b
-  let hash (x:t) = Hashtbl.hash x
-  let to_string s = s
-end)
+    type t = string
+    let equal (a:t) b = String.equal a b
+    let hash (x:t) = Hashtbl.hash x
+    let to_string s = s
+  end)
 
 include BottomUp.Make(StringSymbol)
 
@@ -59,9 +59,10 @@ let query_of_ast q = match q with
     let neg = List.map (literal_of_ast ~tbl) neg in
     let vars = Array.of_list vars in
     let vars = Array.map
-      (fun t -> match term_of_ast ~tbl t with
-      | Var i -> i
-      | Const _ -> failwith "query_of_ast: expected variables")
-      vars
+        (fun t -> match term_of_ast ~tbl t with
+           | Var i -> i
+           | Const _ 
+           | Pair _ -> failwith "query_of_ast: expected variables")
+        vars
     in
     vars, lits, neg

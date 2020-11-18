@@ -64,5 +64,9 @@ val db_subscribe_fact : db -> Default.symbol -> fact_handler -> unit
 val db_subscribe_all_facts : db -> fact_handler -> unit
 val db_subscribe_goal : db -> goal_handler -> unit
 
+val db_explain : db -> Literal.t -> Literal.t list
+(** Explain the given fact by returning a list of facts that imply it
+    under the current clauses, or raise Not_found *)
+
 val db_explanations : db -> Clause.t -> Default.explanation list
 (** Get all the explanations that explain why this clause is true *)

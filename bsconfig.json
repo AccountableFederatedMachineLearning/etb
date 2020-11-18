@@ -2,7 +2,8 @@
   "name": "yg",
   "version": "0.1.0",
   "bs-dependencies": [
-    "bs-express"
+    "bs-express",
+    "bs-winston"
   ],
   "sources": {
     "dir": "src",

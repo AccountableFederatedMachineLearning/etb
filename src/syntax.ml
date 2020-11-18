@@ -78,12 +78,14 @@ module Cyberlogic = struct
       tbl.vartbl_count <- n + 1;
       n
 
-  let term_of_ast ~tbl ast = match ast with
+  let rec term_of_ast ~tbl ast = match ast with
     | A.Const s
     | A.Quoted s ->
       Default.mk_const (Default.StringSymbol.make s)
     | A.Var x ->
       Default.mk_var (getvar ~tbl x)
+    | A.Pair (s, t) ->
+      Default.mk_pair (term_of_ast ~tbl s) (term_of_ast ~tbl t)
 
   let literal_of_ast id defs col ?(tbl=mk_vartbl ()) lit = match lit with
     | A.Atom (s, args) ->
