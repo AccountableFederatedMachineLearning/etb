@@ -4,6 +4,19 @@
 <head>
   <title>Report</title>
   <style>
+    body {
+      margin: 40px auto;
+      max-width: 650px;
+      line-height: 1.6;
+      padding: 0 10px
+    }
+
+    h1,
+    h2,
+    h3 {
+      line-height: 1.2
+    }
+
     .yellow {
       background: yellow;
     }
@@ -13,6 +26,7 @@
     }
 
     #facts {
+      font-family: monospace;
       display: inline-block;
     }
   </style>
@@ -20,17 +34,20 @@
 
 <body>
 
-  <h1>Report</h1>
+  <h1>Node status</h1>
 
+  <!--
   <p id="b(200, 4)">If this text has yellow background, then the claim b(200, 4)
     has been proved locally. If the text has a green border, then it is
     logged on the ledger.
   </p>
+  -->
 
-  <h2>Other facts</h2>
+  <h2>Unsorted facts</h2>
 
   <p>
-    Facts that are not mentioned anywhere are listed here:
+    Facts with yellow background have been proved locally in the node.
+    Facts with a green border are recorded on the ledger.
   </p>
 
   <ul id="facts"> </ul>
@@ -42,10 +59,22 @@
     socket.on('fact', function (msg) {
       let id = msg.literal;
       if (document.getElementById(id) === null) {
-        $('#facts').append($('<li>').append($(`<div id="${id}">`).text(msg.principal.subject[1].CN + " attests " + msg.literal)));
+        $('#facts')
+          .append($('<li>')
+            .append($(`<div id="${id}">`)
+              .text(getFirstCN(msg.principal.subject) + " attests " + msg.literal)));
       }
       $(document.getElementById(id)).addClass(msg.color);
     });
+
+    function getFirstCN(dn) {
+      for (let i of dn) {
+        if (i.CN) {
+          return i.CN;
+        }
+      }
+      return "?";
+    }
   </script>
 </body>
 

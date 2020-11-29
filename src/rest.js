@@ -34,7 +34,7 @@ async function main() {
   var source;
   try {
     source = fs.readFileSync(sourceFile).toString()
-    logger.debug("Using the following source code:\n" + source);
+    logger.debug("Using the following source code\n" + source);
   } catch (err) {
     console.error("Cannot read file '" + sourceFile + "'.");
     console.error(err.message);
@@ -60,7 +60,7 @@ async function main() {
   // Register REST endpoints
 
   app.get('/', async (req, res) => {
-    res.sendFile(__dirname + "/index.html");
+    res.sendFile(__dirname + "/html/index.html");
   })
 
   app.get('/facts', async (req, res) => {
@@ -90,10 +90,6 @@ async function main() {
     let json_fact = cyberlogic.Literal.to_json(fact);
     io.emit(fact_event, json_fact);
   })
-
-  // http.listen(3000, () => {
-  //   console.log('listening on *:3000');
-  // });
 
   http.listen(port, async () => {
     logger.info(`Listening at http://localhost:${port}`);
