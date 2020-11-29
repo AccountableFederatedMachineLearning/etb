@@ -2,7 +2,7 @@
 # Dependencies
 
 The project should compile on Linux and only need an installation
-of Node.js. I am using Fedora 33 and Ubuntu 20.20 with the included
+of Node.js. I am using Fedora 33 and Ubuntu 20.10 with the included
 node packages.
 
 Install dependencies with:
@@ -32,6 +32,9 @@ must be specified in `src/config.js`:
 - Wallet path
 - Hyperledger channel name
 - Hyperledger chaincode name
+
+The chaincode should implement the transaction `Claim`, as 
+implemented in [hyperledger](hyperledger).
 
 # Running
 
