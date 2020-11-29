@@ -1,16 +1,36 @@
 'use strict'
-const fs = require('fs');
-const { Wallets, Gateway } = require('fabric-network');
-const { X509Certificate } = require('@peculiar/x509');
+const config = require('./config')
+const fs = require('fs')
+const { Wallets, Gateway } = require('fabric-network')
 
-const walletDirectoryPath = "../H/fabric-samples/asset-transfer-basic/application-java/wallet";
-const connectionProfileFileName = "../H/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/connection-org1.json";
-const channelName = "mychannel"
-const chaincodeId = "basic";
-// const userId = "appUser";
+async function readWallet() {
+  var wallet;
+  try {
+    wallet = await Wallets.newFileSystemWallet(config.walletDirectory);
+  } catch (e) {
+    throw ("Cannot read wallet from directory " + config.walletDirectory +
+      "\n" + e +
+      "\nCheck walletDirectory setting in config.js.");
+  }
+  return wallet;
+}
+
+async function readConnectionProfile() {
+  var profile;
+  try {
+    const profileJson = (await fs.promises.readFile(config.connectionProfile)).toString();
+    profile = JSON.parse(profileJson);
+  } catch (e) {
+    throw ("Cannot read connection profile from " + config.connectionProfile +
+      "\n" + e +
+      "\nCheck walletDirectory setting in config.js.");
+  }
+  return profile;
+}
+
 
 async function getUserCertificate(userId) {
-  const wallet = await Wallets.newFileSystemWallet(walletDirectoryPath);
+  const wallet = await readWallet();
   const identity = await wallet.get(userId);
   if (identity && identity.type === 'X.509') {
     return identity.credentials.certificate;
@@ -20,9 +40,8 @@ async function getUserCertificate(userId) {
 
 async function connect(userId) {
 
-  const connectionProfileJson = (await fs.promises.readFile(connectionProfileFileName)).toString();
-  const connectionProfile = JSON.parse(connectionProfileJson);
-  const wallet = await Wallets.newFileSystemWallet(walletDirectoryPath);
+  const connectionProfile = await readConnectionProfile();
+  const wallet = await readWallet();
 
   const gatewayOptions = {
     identity: userId,
@@ -32,11 +51,8 @@ async function connect(userId) {
   const gateway = new Gateway();
   await gateway.connect(connectionProfile, gatewayOptions);
 
-  // const pem = gateway.getIdentity().credentials.certificate;
-  // console.log(pem);
-
-  const network = await gateway.getNetwork(channelName);
-  const contract = network.getContract(chaincodeId);
+  const network = await gateway.getNetwork(config.channelName);
+  const contract = network.getContract(config.chaincodeId);
   return contract
 }
 
@@ -48,11 +64,11 @@ async function addContractListener(contract, listener) {
   contract.addContractListener(l);
 }
 
-async function log(contract, msg) {
+async function addClaim(contract, msg) {
   contract.submitTransaction('Claim', msg);
 }
 
 exports.getUserCertificate = getUserCertificate;
 exports.connect = connect;
 exports.addContractListener = addContractListener;
-exports.log = log;
+exports.addClaim = addClaim;

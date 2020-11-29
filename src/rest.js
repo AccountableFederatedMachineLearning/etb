@@ -97,7 +97,14 @@ async function main() {
 
   http.listen(port, async () => {
     logger.info(`Listening at http://localhost:${port}`);
-    const contract = await fabric.connect(walletId);
+    var contract;
+    try {
+      contract = await fabric.connect(walletId);
+    } catch (err) {
+      console.error("Cannot connect to hyperledger.");
+      console.error(err);
+      process.exit(1);
+    }
     logicService.connect_to_contract(db, contract);
   })
 }
