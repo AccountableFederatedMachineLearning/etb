@@ -1,0 +1,13 @@
+'user1':
+  Subject: 'OU=client+OU=org1+OU=department1,CN=appUser1'
+  Issuer: 'C=US,ST=North Carolina,L=Durham,O=org1.example.com,CN=ca.org1.example.com'
+'user2':
+  Subject: 'OU=client+OU=org1+OU=department1,CN=appUser2'
+  Issuer: 'C=US,ST=North Carolina,L=Durham,O=org1.example.com,CN=ca.org1.example.com'
+
+b(1) :- 'user1' says b(1), 'user2' says b(1).
+
+c(I) :- d(X), length(X, I).
+
+e(I) :- h(X), get(X, 'test', I).
+

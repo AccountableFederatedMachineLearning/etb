@@ -1,0 +1,96 @@
+
+
+required :- quorum, 
+            prerequisites,
+            somemetric,
+            ...
+
+forbidden :- message_mismatch,
+             nonsense,
+             ...
+
+message_mismatch :- Party attests sent(Round, Party, Hash1),
+                    aggregator attests received(Round, Party, Hash2),
+                    Party != aggregator,
+                    Hash1 != Hash2.
+
+nonsense :- aggregator attests uses_increments(Round, H1),
+            aggregator attests uses_increments(Round, H2),
+            H1 != H2.
+
+quorum :- aggregator attests parameter('quorum', N),
+          aggregator attests included_model_updates(Round, Model_Update_Hashes),
+          Model_Update_Hashes.length > N,
+          distinct(Model_Update_Hashes).
+
+prerequisits :- // reqired information all data from parties
+
+somemetric :- party attests icheckmylocaldatawiththistool(hash, result), 
+
+Available facts:
+- party attests training_data(data_hash)
+- party attests configuration(yaml)
+- party attests used_code(code_hash)
+- party attests model_update(round, start_model_hash, party_model_update_hash)
+- party attests sent(round, party, party_model_update_hash)
+
+- aggregator attest received(round, party, party_model_update_hash)
+- aggregator attest model_update_removed(round, party_model_update_hash, reason)
+- aggregator attest included_model_updates(round, list_of_included_model_update_hashes)
+
+
+
+
+
+included_model_updates(4, '[123, 445, 5634]')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+distinct(A) :- A.length <= 1.
+distinct(A) :- distinct_from(A, 0, 1).
+distinct_from(A, i, j) :- i < A.length, j < A.length, A[i] != A[j], distinct_from(A, i, j+1).
+distinct_from(A, i, j) :- j >= A.length, distinct_from(A, i+1, 0).
+distinct_from(A, i, j) :- i >= A.length, j >= A.length.
+
+quorum :- agg attests parameter('quorum', 1),
+          agg attests included_model_update(Round, H1).
+
+quorum :- agg attests parameter('quorum', 2),
+          agg attests included_model_update(Round, H1),
+          agg attests included_model_update(Round, H2),
+          distinct(H1, H2).
+
+quorum :- agg attests included_model_update(Round, H1),
+          agg attests included_model_update(Round, H2),
+          agg attests included_model_update(Round, H3),
+          distinct(H1, H2, H3).
+
+
+quorum :- agg attests included_model_updates(Round, Hashes),
+          agg attests parameter('quorum', Value),
+          length(Hashes) > Value.
+
+required :- quorum
+
+low_quorum :- agg attests used_model_updates(Round, H1).
+low_quorum :- agg attests used_model_updates(Round, H1, H2).
+low_quorum :- agg attests used_model_updates(Round, H1, H2, H3).
+
+// Lists: nil(), cons(h, t)
+
+length(nil, 0).
+length([X, Y], j) :- length(Y, i), add(i, 1, j).
+
