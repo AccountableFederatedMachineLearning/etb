@@ -38,16 +38,21 @@ let log_yellow_facts t : Cyberlogic.fact_handler =
     run_later t log_action
   | _ -> ()
 
-(* let json_handler t : Cyberlogic.goal_handler =
-   let no_quotes_exn s = String.sub s 1 (String.length s - 2) in
-   let json_of_const_exn c = match c with
+let json_handler t : Cyberlogic.goal_handler =
+  let no_quotes_exn s = 
+    if String.length s >= 2 && 
+       String.get s 0 = '\'' && 
+       String.get s (String.length s - 1) = '\''
+    then String.sub s 1 (String.length s - 2) 
+    else s in
+  let json_of_const_exn c = match c with
     | Const s -> Js.Json.parseExn (no_quotes_exn (StringSymbol.to_string s))
     | _ -> failwith "no const" in
-   let array_of_const_exn c = 
+  let array_of_const_exn c = 
     Belt.Option.getExn (Js.Json.decodeArray (json_of_const_exn c)) in
-   let object_of_const_exn c = 
+  let object_of_const_exn c = 
     Belt.Option.getExn (Js.Json.decodeObject (json_of_const_exn c)) in
-   fun (goal : Cyberlogic.Literal.t) ->
+  fun (goal : Cyberlogic.Literal.t) ->
     let h, a = Default.open_literal (Cyberlogic.Literal.plain_literal goal) in
     Logger.debug("goal '" ^ (Syntax.Cyberlogic.short_literal goal) ^ "'");
     begin
@@ -56,52 +61,37 @@ let log_yellow_facts t : Cyberlogic.fact_handler =
         begin
           try
             let array = array_of_const_exn array_const in
-            let length = Array.length array in
-            let lc = Default.mk_const (Default.StringSymbol.make (string_of_int length)) in
-            let x = Cyberlogic.Literal.make h Cyberlogic.Yellow t.id [array_const; lc] in
+            let length_const = Array.length array
+                               |> string_of_int 
+                               |> Default.StringSymbol.make
+                               |> Default.mk_const in
+            let x = Cyberlogic.Literal.make h Cyberlogic.Yellow t.id 
+                [array_const; length_const] in
             Cyberlogic.db_add_fact t.db x
           with
             _ -> ()
+          (* if anything fails, add nothing *)
         end
-      | "get", [(Const _) as obj_const; Const field] -> 
+      | "get", [(Const _) as obj_const; (Const field_sym) as field_const; _] -> 
         begin
           try
-            let obj = object_of_const_exn  in
-            let length = Array.length array in
-            let lc = Default.mk_const (Default.StringSymbol.make (string_of_int length)) in
-            let x = Cyberlogic.Literal.make h Cyberlogic.Yellow t.id [array_const; lc] in
+            let obj = object_of_const_exn obj_const in
+            let field = no_quotes_exn (Default.StringSymbol.to_string field_sym) in
+            let value_const = Js_dict.get obj field 
+                              |> Belt.Option.getExn 
+                              |> Js.Json.stringify
+                              |> Default.StringSymbol.make
+                              |> Default.mk_const in
+            Js.log(value_const);
+            let x = Cyberlogic.Literal.make h Cyberlogic.Yellow t.id 
+                [obj_const; field_const; value_const] in
             Cyberlogic.db_add_fact t.db x
           with
             _ -> ()
+          (* if anything fails, add nothing *)
         end
       | _ -> ()
-    end *)
-
-
-let goalhandler t : Cyberlogic.goal_handler =
-  fun (goal : Cyberlogic.Literal.t) ->
-  let h, a = Default.open_literal (Cyberlogic.Literal.plain_literal goal) in
-  Logger.debug("goal '" ^ (Syntax.Cyberlogic.short_literal goal) ^ "'");
-  begin
-    match Default.StringSymbol.to_string h, a with
-    | "length", [Const a; _] -> 
-      let aa = (Default.StringSymbol.to_string a) in
-      let aa = String.sub aa 1 (String.length aa - 2) in
-      Js.log(aa);
-      begin
-        try
-          let l = Array.length (Belt.Option.getExn (Js.Json.decodeArray (Js.Json.parseExn aa))) in
-          Js.log(l);
-          let lc = Default.mk_const (Default.StringSymbol.make (string_of_int l)) in
-          Js.log(lc);
-          let x = Cyberlogic.Literal.make h Cyberlogic.Yellow t.id [mk_const a; lc] in
-          Js.log(x);
-          Cyberlogic.db_add_fact t.db x
-        with
-          _ -> ()
-      end
-    | _ -> ()
-  end
+    end 
 
 (** Payload of claim events *)
 module ClaimEvent = struct
@@ -154,7 +144,7 @@ let create id clauses =
     pending = []
   } in
   Cyberlogic.db_subscribe_all_facts t.db (log_yellow_facts t);
-  Cyberlogic.db_subscribe_goal t.db (goalhandler t);
+  Cyberlogic.db_subscribe_goal t.db (json_handler t);
   clauses |> List.iter (fun clause ->
       Logger.debug (Syntax.Cyberlogic.short_clause clause);
       Cyberlogic.db_add t.db clause

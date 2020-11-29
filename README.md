@@ -67,14 +67,26 @@ track updates
 
 - `http GET localhost:5000/facts` lists all facts on the node in JSON format
 
-- `http PUT localhost:5000/facts/"test('dbs sd', 3)"` submits a new claim to the node. The principal is the user id with which the node was 
-started.
+- `http PUT localhost:5000/facts/"test('dbs sd', 3)"` submits a new claim to 
+   the node. The principal is the user id with which the node was started.
 
-<!--
-- `http PUT localhost:5000/goals/"test(X, 3)"` submits a query.
-Currently, this triggers backchaining, but it is not connected to 
-anything.
--->
+- `http PUT localhost:5000/goals/"test(X, 3)"` adds a goal of the given form.
+  This is useful to trigger backchaining, since not *all* consequences
+  of all rules are computed automatically. For example, suppose one has
+  a program with the following clause:
+
+    ```prolog
+      a(X) :- b(Y), length(Y, X)
+    ```
+
+  If one adds the fact `b('[1,2,3]')`, then the clause can derive `a(3)`.
+  By default, this does not happen automatically, since the engine does
+  not know which instances of `length(Y, X)` to add.
+  
+  However, one can achieve this by making `a(X)` a goal.
+  After each change to the database, the engine will then check by
+  backchaining what needs to be proved to establish `a(X)`. It will
+  add suitable instances of `length(Y, X)` when required thus.
 
 # Syntax of Logic Programs
 
@@ -86,6 +98,8 @@ a('test', 5) :- b('test', 4).
 ```
 The claims in this program do not mention a principal. They are
 implicitly treated as claims of the principal that runs the node.
+
+## Principals
 
 It is possible to refer to other principals. Principals are identified
 by the subject and issuer fields in the X.509 certificate that they are using to access Hyperledger.
@@ -106,12 +120,23 @@ It therefore does not make sense to have clauses whose conclusion is
 a claim for a principal other than the one running the node
 (this requirement should be checked during parsing, but isn't currently).
 
+## JSON
+
+The following operations for working with JSON-values are currently 
+implemented:
+
+- `length(json_array, len)`: Length of JSON arrays. 
+   For example, we have `length('[1, 2, 3]', 3)`.
+
+- `let(json_object, field, value)`: Accessing fields of JSON objects.
+   For example, we have `get('{"test": 4}', 'test', 4)`.
+
 # TODOs
 
 - When started, the node should probably read existing facts from
   the ledger. Currently, it starts from an empty database.
 
-- Check that programs contain only clauses with claims for the 
-  principal running the node.
+- Programs that contain clauses making claims for other principals
+  are currently accepted, but should not.
 
-- Add more primitive operations, for integers, JSON, ...
+- Add more primitive operations for integers, JSON, ...
