@@ -7,7 +7,7 @@
 
 module Univ = struct
   type t = unit -> unit
-  (** The universal type *)
+    (** The universal type *)
 
   type 'a embedding = {
     pack : 'a -> t;           (** Pack a 'a into a univ value *)
@@ -44,24 +44,22 @@ module type S = sig
   (** {2 Literals and clauses} *)
 
   type symbol
-  (** Abstract type of symbols (individual objects) *)
+    (** Abstract type of symbols (individual objects) *)
 
   type term = private
     | Var of int
     | Const of symbol
-    | Pair of term * term
     (** Individual object *)
 
   val mk_var : int -> term
   val mk_const : symbol -> term
-  val mk_pair : term -> term -> term
 
   type literal
-  (** A datalog atom, i.e. pred(arg_1, ..., arg_n). The first element of the
-      array is the predicate, then arguments follow *)
+    (** A datalog atom, i.e. pred(arg_1, ..., arg_n). The first element of the
+        array is the predicate, then arguments follow *)
 
   type clause
-  (** A datalog clause, i.e. head :- body_1, ..., body_n *)
+    (** A datalog clause, i.e. head :- body_1, ..., body_n *)
 
   type soft_lit = symbol * term list
   type soft_clause = soft_lit * soft_lit list
@@ -69,58 +67,58 @@ module type S = sig
   (** {3 Constructors and destructors} *)
 
   val mk_literal : symbol -> term list -> literal
-  (** Helper to build a literal. Arguments are either variables or constants *)
+    (** Helper to build a literal. Arguments are either variables or constants *)
 
   val of_soft_lit : soft_lit -> literal
 
   val open_literal : literal -> soft_lit
-  (** Deconstruct a literal *)
+    (** Deconstruct a literal *)
 
   val mk_clause : literal -> literal list -> clause
-  (** Create a clause from a conclusion and a list of premises *)
+    (** Create a clause from a conclusion and a list of premises *)
 
   val of_soft_clause : soft_clause -> clause
 
   val open_clause : clause -> soft_clause
-  (** Deconstruct a clause *)
+    (** Deconstruct a clause *)
 
   val is_ground : literal -> bool
-  (** Is the literal ground (a fact)? *)
+    (** Is the literal ground (a fact)? *)
 
   val arity : literal -> int
-  (** Number of subliterals of the literal. Ex for p(a,b,c) it returns 3 *)
+    (** Number of subliterals of the literal. Ex for p(a,b,c) it returns 3 *)
 
   (** {3 Comparisons} *)
 
   val eq_term : term -> term -> bool
 
   val eq_literal : literal -> literal -> bool
-  (** Are the literals equal? *)
+    (** Are the literals equal? *)
 
   val hash_literal : literal -> int
-  (** Hash the literal *)
+    (** Hash the literal *)
 
   val check_safe : clause -> bool
-  (** A datalog clause is safe iff all variables in its head also occur in its body *)
+    (** A datalog clause is safe iff all variables in its head also occur in its body *)
 
   val is_fact : clause -> bool
-  (** A fact is a ground clause with empty body *)
+    (** A fact is a ground clause with empty body *)
 
   val eq_clause : clause -> clause -> bool
-  (** Check whether clauses are (syntactically) equal *)
+    (** Check whether clauses are (syntactically) equal *)
 
   val hash_clause : clause -> int
-  (** Hash the clause *)
+    (** Hash the clause *)
 
   (** {3 Pretty-printing} *)
 
   val pp_term : Format.formatter -> term -> unit
 
   val pp_literal : Format.formatter -> literal -> unit
-  (** Pretty print the literal *)
+    (** Pretty print the literal *)
 
   val pp_clause : Format.formatter -> clause -> unit
-  (** Pretty print the clause *)
+    (** Pretty print the clause *)
 
   (** {2 Higher level API} *)
 
@@ -140,7 +138,7 @@ module type S = sig
   exception UnsafeClause
 
   type db
-  (** A database of facts and clauses, with incremental fixpoint computation *)
+    (** A database of facts and clauses, with incremental fixpoint computation *)
 
   type explanation =
     | Axiom
@@ -149,39 +147,39 @@ module type S = sig
     (** Explanation for a clause or fact. It is extensible through universal types. *)
 
   val db_create : unit -> db
-  (** Create a DB *)
+    (** Create a DB *)
 
   val db_copy : db -> db
-  (** Deep copy of the DB *)
+    (** Deep copy of the DB *)
 
   val db_mem : db -> clause -> bool
-  (** Is the clause member of the DB? *)
+    (** Is the clause member of the DB? *)
 
   val db_add : ?expl:explanation -> db -> clause -> unit
-  (** Add the clause/fact to the DB as an axiom, updating fixpoint.
-      UnsafeRule will be raised if the rule is not safe (see {!check_safe}) *)
+    (** Add the clause/fact to the DB as an axiom, updating fixpoint.
+        UnsafeRule will be raised if the rule is not safe (see {!check_safe}) *)
 
   val db_add_fact : ?expl:explanation -> db -> literal -> unit
-  (** Add a fact (ground unit clause) *)
+    (** Add a fact (ground unit clause) *)
 
   val db_goal : db -> literal -> unit
-  (** Add a goal to the DB. The goal is used to trigger backward chaining
-      (calling goal handlers that could help solve the goal) *)
+    (** Add a goal to the DB. The goal is used to trigger backward chaining
+        (calling goal handlers that could help solve the goal) *)
 
   val db_match : db -> literal -> (literal -> unit) -> unit
-  (** match the given literal with facts of the DB, calling the handler on
-      each fact that match *)
+    (** match the given literal with facts of the DB, calling the handler on
+        each fact that match *)
 
-  val db_query : db -> literal -> int list -> (term list -> unit) -> unit
-  (** Like {!db_match}, but the additional int list is used to select
-      bindings of variables in the literal. Their bindings, in the same
-      order, are given to the callback. *)
+  val db_query : db -> literal -> int list -> (symbol list -> unit) -> unit
+    (** Like {!db_match}, but the additional int list is used to select
+        bindings of variables in the literal. Their bindings, in the same
+        order, are given to the callback. *)
 
   val db_size : db -> int
-  (** Size of the DB *)
+    (** Size of the DB *)
 
   val db_fold : ('a -> clause -> 'a) -> 'a -> db -> 'a
-  (** Fold on all clauses in the current DB (including fixpoint) *)
+    (** Fold on all clauses in the current DB (including fixpoint) *)
 
   type fact_handler = literal -> unit
   type goal_handler = literal -> unit
@@ -193,50 +191,50 @@ module type S = sig
   type user_fun = soft_lit -> soft_lit
 
   val db_add_fun : db -> symbol -> user_fun -> unit
-  (** Add a function to be called on new literals. Only one function per
-      symbol can be registered. *)
+    (** Add a function to be called on new literals. Only one function per
+        symbol can be registered. *)
 
   val db_goals : db -> (literal -> unit) -> unit
-  (** Iterate on all current goals *)
+    (** Iterate on all current goals *)
 
   val db_explain : db -> literal -> literal list
-  (** Explain the given fact by returning a list of facts that imply it
-      under the current clauses, or raise Not_found *)
+    (** Explain the given fact by returning a list of facts that imply it
+        under the current clauses, or raise Not_found *)
 
   val db_premises : db -> literal -> clause * literal list
-  (** Immediate premises of the fact (ie the facts that resolved with
-      a clause to give the literal), plus the clause that has been used. *)
+    (** Immediate premises of the fact (ie the facts that resolved with
+        a clause to give the literal), plus the clause that has been used. *)
 
   val db_explanations : db -> clause -> explanation list
-  (** Get all the explanations that explain why this clause is true *)
+    (** Get all the explanations that explain why this clause is true *)
 
   (** {2 Querying} *)
 
   module Query : sig
     type set
-    (** mutable set of term lists *)
+      (** mutable set of term lists *)
 
     val ask : db -> ?neg:literal list -> int array -> literal list -> set
-    (** Given a list of variables, and a list of literals that contain those
-        variables, return a set. Each element of the set is an instantiation
-        of the variables such that all instantiated literals are facts of
-        the [db]. [neg] is an optional list of literals that must be false
-        for an instantiation to be an answer.
-        This is lazy, and will only be evaluated upon calls to {! iter},
-        {! to_list} or other similar functions. The answers will be cached
-        in the set and readily available thereafter. *)
+      (** Given a list of variables, and a list of literals that contain those
+          variables, return a set. Each element of the set is an instantiation
+          of the variables such that all instantiated literals are facts of
+          the [db]. [neg] is an optional list of literals that must be false
+          for an instantiation to be an answer.
+          This is lazy, and will only be evaluated upon calls to {! iter},
+          {! to_list} or other similar functions. The answers will be cached
+          in the set and readily available thereafter. *)
 
     val iter : set -> (term array -> unit) -> unit
-    (** Evaluate the set by iterating on it *)
+      (** Evaluate the set by iterating on it *)
 
     val to_list : set -> term array list
-    (** Convert to a list *)
+      (** Convert to a list *)
 
     val cardinal : set -> int
-    (** Number of elements of the set *)
+      (** Number of elements of the set *)
 
     val pp_plan : Format.formatter -> set -> unit
-    (** Print query plan *)
+      (** Print query plan *)
   end
 end
 
@@ -255,19 +253,17 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
   type term =
     | Var of int
     | Const of symbol
-    | Pair of term * term
     (** Individual object *)
 
   let mk_var i = Var i
   let mk_const s = Const s
-  let mk_pair s t = Pair (s, t)
 
   type literal = term array
-  (** A datalog atom, i.e. pred(arg_1, ..., arg_n). The first element of the
-      array is the predicate, then arguments follow *)
+    (** A datalog atom, i.e. pred(arg_1, ..., arg_n). The first element of the
+        array is the predicate, then arguments follow *)
 
   type clause = literal array
-  (** A datalog clause, i.e. head :- body_1, ..., body_n *)
+    (** A datalog clause, i.e. head :- body_1, ..., body_n *)
 
   type soft_lit = symbol * term list
   type soft_clause = soft_lit * soft_lit list
@@ -281,8 +277,8 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
         to ints with context (variable or symbol) *)
 
   type 'a bind = ('a * int)
-  (** A context in which to interpret variables in a literal or clause.
-      The context is an offset that is implicitely applied to variables *)
+    (** A context in which to interpret variables in a literal or clause.
+        The context is an offset that is implicitely applied to variables *)
 
   (** Helper to build a literal. *)
   let mk_literal head args = Array.of_list (Const head :: args)
@@ -316,70 +312,48 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
   let is_var t = match t with
     | Var _ -> true
     | Const _ -> false
-    | Pair _ -> false
-
-  let vars t =
-    let rec vars_acc acc t =
-      match t with
-      | Var i -> (Var i) :: acc
-      | Const _ -> acc
-      | Pair (s, t) -> vars_acc (vars_acc acc s) t in
-    vars_acc [] t
-
-  let rec for_all_vars f t= match t with
-    | Var i -> f (Var i)
-    | Const _ -> true
-    | Pair (s, t) -> (for_all_vars f s) && (for_all_vars f t)
-
-  let rec term_is_ground t = match t with
-    | Var _ -> false
-    | Const _ -> true
-    | Pair (s, t) -> term_is_ground s && term_is_ground t
 
   (** Is the literal ground (a fact)? *)
   let is_ground t =
     assert (not (is_var t.(0)));
     let rec check t i =
       if i = Array.length t then true
-      else (term_is_ground t.(i)) && check t (i+1)
+      else (not (is_var t.(i))) && check t (i+1)
     in
     check t 1
 
   (** Number of subterms of the literal. Ex for p(a,b,c) it returns 3 *)
   let arity t = Array.length t - 1
 
-  let rec eq_term t1 t2 = match t1, t2 with
+  let eq_term t1 t2 = match t1, t2 with
     | Var i, Var j -> i = j
     | Const s1, Const s2 -> Symbol.equal s1 s2
-    | Pair (s1, u1), Pair (s2, u2) -> eq_term s1 s2 && eq_term u1 u2
     | _ -> false
 
   (** Are the literals equal? *)
   let eq_literal t1 t2 =
     let rec check t1 t2 i =
       if i = Array.length t1
-      then true
-      else eq_term t1.(i) t2.(i) && check t1 t2 (i+1)
+        then true
+        else eq_term t1.(i) t2.(i) && check t1 t2 (i+1)
     in
     Array.length t1 = Array.length t2 && check t1 t2 0
 
-  let rec hash_term t = match t with
+  let hash_term t = match t with
     | Var i -> i
     | Const s -> Symbol.hash s
-    | Pair (s, t) -> (hash_term s) * 65599 + (hash_term t)
 
   module TermHashtbl = Hashtbl.Make(struct
-      type t = term
-      let equal = eq_term
-      let hash = hash_term
-    end)
+    type t = term
+    let equal = eq_term
+    let hash = hash_term
+  end)
 
   (** Hash the literal *)
   let hash_literal t =
-    let rec hash_term h t = match t with
-      | Var i -> h * 65599 + i
-      | Const s -> h * 65599 + Symbol.hash s
-      | Pair (s, t) -> hash_term (h * 65599 + hash_term h s) t
+    let hash_term h t = match t with
+    | Var i -> h * 65599 + i
+    | Const s -> h * 65599 + Symbol.hash s
     in
     abs (Array.fold_left hash_term 13 t)
 
@@ -389,17 +363,15 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
       if i = Array.length clause.(0) then true
       else
         let t = clause.(0).(i) in
-        List.for_all (fun v -> check_body v 1) (vars t) &&  check_head (i+1)
+        if is_var t
+          then check_body t 1 && check_head (i+1)
+          else check_head (i+1)
     and check_body var j =
       if j = Array.length clause then false
-      else check_body_literal var clause.(j) 1 || check_body var (j+1)
+        else check_body_literal var clause.(j) 1 || check_body var (j+1)
     and check_body_literal var literal k =
-      let rec contains t = match t with
-        | Var _ -> eq_term t var
-        | Const _ -> false
-        | Pair (s, t) -> contains s || contains t in
       if k = Array.length literal then false
-      else if contains literal.(k) then true
+      else if eq_term literal.(k) var then true
       else check_body_literal var literal (k+1)
     in
     check_head 1
@@ -412,8 +384,8 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
   let eq_clause r1 r2 =
     let rec check i =
       if i = Array.length r1
-      then true
-      else eq_literal r1.(i) r2.(i) && check (i+1)
+        then true
+        else eq_literal r1.(i) r2.(i) && check (i+1)
     in
     Array.length r1 = Array.length r2 && check 0
 
@@ -439,12 +411,10 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
     let rec fold_lit terms offset i =
       if i = Array.length terms then offset
       else
-        let rec offset_r t = match t with
-          | Const _ -> offset
-          | Var i -> max i offset
-          | Pair (s, t) -> max (offset_r s) (offset_r t) in
-        let offset = offset_r terms.(i) in
-        fold_lit terms offset (i+1)
+        let offset = match terms.(i) with
+        | Const _ -> offset
+        | Var i -> max i offset
+        in fold_lit terms offset (i+1)
     and fold_lits lits offset i =
       if i = Array.length lits then offset
       else fold_lits lits (fold_lit lits.(i) offset 1) (i+1)
@@ -453,36 +423,24 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
     (* highest var + 1, no collision! *)
     offset + 1
 
-  let rec shift_term t offset = 
-    match t with
-    | Var i -> Var (i+offset)
-    | Const _ -> t 
-    | Pair (s, t) -> Pair (shift_term s offset, shift_term t offset)
-
-  (** TODO: Dereference [var] in context [offset] until it is no longer a
+  (** Dereference [var] in context [offset] until it is no longer a
       bound variable *)
   let rec deref subst var offset =
     match subst, var with
     | _, Const _ -> var, offset
-    | _, Pair (s, t) -> 
-      let ds, o_s = deref subst s offset in
-      let dt, o_t = deref subst t offset in
-      Pair (shift_term ds (o_s - o_t), shift_term dt 0), o_t
-    | SubstBind (i, o, t, o_t, _), Var j when i + o = j + offset ->
+    | SubstBind (i, o, t, o_t, _), Var j when i = j && o = offset ->
       deref subst t o_t
     | SubstBind (_, _, _, _, subst'), _ -> deref subst' var offset
     | SubstEmpty, _ -> var, offset
-
 
   (** Bind [v] to [t], with offsets *)
   let bind_subst subst v o_v t o_t =
     assert (is_var v);
     if eq_term v t && o_v = o_t
-    then subst  (* no-op *)
-    else match v with
-      | Var i -> SubstBind (i, o_v, t, o_t, subst)
-      | Const _ -> assert false
-      | Pair _ -> assert false
+      then subst  (* no-op *)
+      else match v with
+        | Var i -> SubstBind (i, o_v, t, o_t, subst)
+        | Const _ -> assert false
 
   (** [matching pattern l] matches [pattern] against [l]; variables in [l]
       cannot be bound. Raise UnifFailure if they do not match. *)
@@ -492,10 +450,10 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
     else
       let rec match_pairs subst i =
         if i = Array.length l1 then subst else
-          let t1, o1' = deref subst l1.(i) o1
-          and t2, o2' = deref subst l2.(i) o2 in
-          let subst' = match_pair subst t1 o1' t2 o2' in
-          match_pairs subst' (i+1)
+        let t1, o1' = deref subst l1.(i) o1
+        and t2, o2' = deref subst l2.(i) o2 in
+        let subst' = match_pair subst t1 o1' t2 o2' in
+        match_pairs subst' (i+1)
       and match_pair subst t1 o1' t2 o2' =
         match t1, t2 with
         | Const s1, Const s2 ->
@@ -503,15 +461,7 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
         | Var i, Var j when i = j && o1' = o2' -> subst
         | Var _, _ ->
           bind_subst subst t1 o1' t2 o2' (* bind var *)
-        | Pair (s1, u1), Pair (s2, u2) ->
-          let subst' = match_pair subst s1 o1' s2 o2' in
-          let u1', o21' = deref subst' u1 o1'
-          and u2', o22' = deref subst' u2 o2' in
-          match_pair subst' u1' o21' u2' o22'
-        | Const _, Var _
-        | Pair _, Var _ 
-        | Const _, Pair _
-        | Pair _, Const _ -> raise UnifFailure (* cannot bind t2 *)
+        | Const _, Var _ -> raise UnifFailure (* cannot bind t2 *)
       in match_pairs subst 0
 
   (** [unify l1 l2] tries to unify [l1] with [l2].
@@ -522,10 +472,10 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
     else
       let rec unif_pairs subst i =
         if i = Array.length l1 then subst else
-          let t1, o1' = deref subst l1.(i) o1
-          and t2, o2' = deref subst l2.(i) o2 in
-          let subst' = unif_pair subst t1 o1' t2 o2' in
-          unif_pairs subst' (i+1)
+        let t1, o1' = deref subst l1.(i) o1
+        and t2, o2' = deref subst l2.(i) o2 in
+        let subst' = unif_pair subst t1 o1' t2 o2' in
+        unif_pairs subst' (i+1)
       and unif_pair subst t1 o1' t2 o2' =
         match t1, t2 with
         | Const s1, Const s2 ->
@@ -533,16 +483,8 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
         | Var i, Var j when i = j && o1' = o2' -> subst
         | Var _, _ ->
           bind_subst subst t1 o1' t2 o2' (* bind var *)
-        | Const _, Var _ 
-        | Pair _, Var _ ->
+        | Const _, Var _ ->
           bind_subst subst t2 o2' t1 o1' (* bind var *)
-        | Pair (s1, u1), Pair (s2, u2) ->
-          let subst' = unif_pair subst s1 o1' s2 o2' in
-          let u1', o21' = deref subst' u1 o1'
-          and u2', o22' = deref subst' u2 o2' in
-          unif_pair subst' u1' o21' u2' o22'
-        | Const _, Pair _
-        | Pair _, Const _ -> raise UnifFailure
       in unif_pairs subst 0
 
   (** If the literals are alpha equivalent, return the corresponding renaming *)
@@ -552,10 +494,10 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
     else
       let rec unif_pairs subst i =
         if i = Array.length l1 then subst else
-          let t1, o1' = deref subst l1.(i) o1
-          and t2, o2' = deref subst l2.(i) o2 in
-          let subst' = unif_pair subst t1 o1' t2 o2' in
-          unif_pairs subst' (i+1)
+        let t1, o1' = deref subst l1.(i) o1
+        and t2, o2' = deref subst l2.(i) o2 in
+        let subst' = unif_pair subst t1 o1' t2 o2' in
+        unif_pairs subst' (i+1)
       and unif_pair subst t1 o1' t2 o2' =
         match t1, t2 with
         | Const s1, Const s2 ->
@@ -563,34 +505,31 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
         | Var i, Var j when i = j && o1' = o2' -> subst
         | Var _, Var _ ->
           bind_subst subst t1 o1' t2 o2' (* bind var *)
-        | Pair (s1, u1), Pair (s2, u2) ->
-          let subst' = unif_pair subst s1 o1' s2 o2' in
-          let u1', o21' = deref subst' u1 o1'
-          and u2', o22' = deref subst' u2 o2' in
-          unif_pair subst' u1' o21' u2' o22'
         | Const _, Var _
-        | Pair _, Var _
-        | Var _, Const _
-        | Var _, Pair _
-        | Pair _, Const _
-        | Const _, Pair _ -> raise UnifFailure
+        | Var _, Const _ -> raise UnifFailure
       in unif_pairs subst 0
 
   (** shift literal by offset *)
   let shift_lit lit offset =
     if offset = 0 then lit
-    else Array.map (fun t -> shift_term t offset) lit
+    else Array.map
+      (fun t -> match t with
+      | Var i -> Var (i+offset)
+      | Const _ -> t)
+      lit
 
   (** Apply substitution to the literal *)
   let subst_literal subst (lit,offset) =
     if is_ground lit || (is_empty_subst subst && offset = 0) then lit
     else if is_empty_subst subst then shift_lit lit offset
     else Array.map
-        (fun t ->
-           let t', o_t' = deref subst t offset in
-           (* shift [t'] if [t'] is a var *)
-           shift_term t' o_t')
-        lit
+      (fun t ->
+        let t', o_t' = deref subst t offset in
+        (* shift [t'] if [t'] is a var *)
+        match t' with
+        | Var i -> Var (i + o_t')
+        | Const _ -> t')
+      lit
 
   (** Remove first body element of the clause, after substitution *)
   let remove_first_subst subst (clause,offset) =
@@ -604,34 +543,33 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
 
   (** {3 Pretty-printing} *)
 
-  let rec pp_term formatter t = match t with
+  let pp_term formatter t = match t with
     | Const s -> Format.pp_print_string formatter (Symbol.to_string s)
     | Var i -> Format.fprintf formatter "X%d" i
-    | Pair (s, t) -> Format.fprintf formatter "[%a, %a]" pp_term s pp_term t
 
   let pp_literal formatter t =
     if arity t = 0
-    then pp_term formatter t.(0)
-    else begin
-      Format.fprintf formatter "%a(" pp_term t.(0);
-      for i = 1 to Array.length t - 1 do
-        (if i > 1 then Format.fprintf formatter ", ");
-        pp_term formatter t.(i)
-      done;
-      Format.fprintf formatter ")";
-    end
+      then pp_term formatter t.(0)
+      else begin
+        Format.fprintf formatter "%a(" pp_term t.(0);
+        for i = 1 to Array.length t - 1 do
+          (if i > 1 then Format.fprintf formatter ", ");
+          pp_term formatter t.(i)
+        done;
+        Format.fprintf formatter ")";
+      end
 
   let pp_clause formatter clause =
     if Array.length clause = 1
-    then Format.fprintf formatter "%a." pp_literal clause.(0)
-    else begin
-      Format.fprintf formatter "%a :-@ "  pp_literal clause.(0);
-      for i = 1 to Array.length clause - 1 do
-        (if i > 1 then Format.fprintf formatter ",@ ");
-        Format.fprintf formatter "%a" pp_literal clause.(i);
-      done;
-      Format.fprintf formatter ".";
-    end
+      then Format.fprintf formatter "%a." pp_literal clause.(0)
+      else begin
+        Format.fprintf formatter "%a :-@ "  pp_literal clause.(0);
+        for i = 1 to Array.length clause - 1 do
+          (if i > 1 then Format.fprintf formatter ",@ ");
+          Format.fprintf formatter "%a" pp_literal clause.(i);
+        done;
+        Format.fprintf formatter ".";
+      end
 
   (** {2 Higher level API} *)
 
@@ -669,51 +607,51 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
 
   (** Hashtable on literals *)
   module LitHashtbl = Hashtbl.Make(struct
-      type t = literal
-      let equal = eq_literal
-      let hash = hash_literal
-    end)
+    type t = literal
+    let equal = eq_literal
+    let hash = hash_literal
+  end)
 
   (* TODO: SQL-like indexing for the fact index (hashtable on columns)? *)
 
   (** Type for an indexing structure on literals *)
   module type Index = sig
     type t
-    (** A literal index *)
+      (** A literal index *)
 
     type elt
-    (** A value indexed by a literal *)
+      (** A value indexed by a literal *)
 
     val create : unit -> t
-    (** Create a new index *)
+      (** Create a new index *)
 
     val copy : t -> t
-    (** Deep copy (TODO copy-on-write?) *)
+      (** Deep copy (TODO copy-on-write?) *)
 
     val add : t -> literal -> elt -> unit
-    (** Add an element indexed by the literal *)
+      (** Add an element indexed by the literal *)
 
     val retrieve_generalizations : ('a -> literal -> elt -> subst -> 'a) -> 'a ->
-      t bind -> literal bind -> 'a
-    (** Fold on generalizations of given literal *)
+                                   t bind -> literal bind -> 'a
+      (** Fold on generalizations of given literal *)
 
     val retrieve_specializations : ('a -> literal -> elt -> subst -> 'a) -> 'a ->
-      t bind -> literal bind -> 'a
-    (** Fold on specializations of given literal *)
+                                   t bind -> literal bind -> 'a
+      (** Fold on specializations of given literal *)
 
     val retrieve_unify : ('a -> literal -> elt -> subst -> 'a) -> 'a ->
-      t bind -> literal bind -> 'a
-    (** Fold on content that is unifiable with given literal *)
+                         t bind -> literal bind -> 'a
+      (** Fold on content that is unifiable with given literal *)
 
     val retrieve_renaming : ('a -> literal -> elt -> subst -> 'a) -> 'a ->
-      t bind -> literal bind -> 'a
-    (** Fold on elements that are alpha-equivalent to given literal *)
+                            t bind -> literal bind -> 'a
+      (** Fold on elements that are alpha-equivalent to given literal *)
 
     val fold : ('a -> literal -> elt -> 'a) -> 'a -> t -> 'a
-    (** Fold on all indexed elements *)
+      (** Fold on all indexed elements *)
 
     val size : t -> int
-    (** Number of indexed elements (linear time) *)
+      (** Number of indexed elements (linear time) *)
   end
 
   (** Create an Index module for the given type of elements. The implementation
@@ -721,17 +659,17 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
   module MakeIndex(X : Hashtbl.HashedType) : Index with type elt = X.t = struct
     (** A set of literal+indexed data *)
     module DataSet = Hashtbl.Make(struct
-        type t = literal * X.t
-        let equal (l1,x1) (l2,x2) = eq_literal l1 l2 && X.equal x1 x2
-        let hash (l,x) = hash_literal l lxor X.hash x
-      end)
+      type t = literal * X.t
+      let equal (l1,x1) (l2,x2) = eq_literal l1 l2 && X.equal x1 x2
+      let hash (l,x) = hash_literal l lxor X.hash x
+    end)
 
     (** The literal index. It is a trie with, at each node, a hashset
         of elements, plus a map symbol/var -> subtrie.
         All variables are mapped to [Var 0], because the tree is non-perfect.
         This makes matching slower, but consumes less memory. *)
     type t =
-      | Node of unit DataSet.t * t TermHashtbl.t
+    | Node of unit DataSet.t * t TermHashtbl.t
 
     (** Indexed elements *)
     type elt = X.t
@@ -749,30 +687,28 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
         Node (set', h')
 
     let __star = Var 0
-    let __pair = Var 1
 
     let term_to_char t = match t with
       | Const _ -> t
       | Var _ -> __star  (* any var is the same *)
-      | Pair _ -> __pair (* any pair is the same (TODO) *)
 
     (** Add the element indexed by the literal *)
     let add t literal elt =
       let len = Array.length literal in
       (* index in subtrie [t], with a cursor at literal[i]. *)
       let rec add t i = match t, i with
-        | Node (set, _subtries), i when i = len ->
-          DataSet.replace set (literal,elt) () (* insert in leaf *)
-        | Node (_, subtries), i ->
-          let c = term_to_char literal.(i) in
-          try
-            let subtrie = TermHashtbl.find subtries c in
-            add subtrie (i+1)
-          with Not_found ->
-            (* create a new subtrie for the i-th argument of literal, then recurse *)
-            let subtrie = create () in
-            TermHashtbl.add subtries c subtrie;
-            add subtrie (i+1)
+      | Node (set, _subtries), i when i = len ->
+        DataSet.replace set (literal,elt) () (* insert in leaf *)
+      | Node (_, subtries), i ->
+        let c = term_to_char literal.(i) in
+        try
+          let subtrie = TermHashtbl.find subtries c in
+          add subtrie (i+1)
+        with Not_found ->
+          (* create a new subtrie for the i-th argument of literal, then recurse *)
+          let subtrie = create () in
+          TermHashtbl.add subtries c subtrie;
+          add subtrie (i+1)
       in
       add t 0
 
@@ -781,27 +717,24 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
       let len = Array.length literal in
       (* search in subtrie [t], with cursor at [i]-th argument of [literal] *)
       let rec search t i acc = match t, i with
-        | Node (set, _), i when i = len ->
-          DataSet.fold
-            (fun (lit',elt) () acc ->
-               try
-                 let subst = matching (lit',o_t) (literal,o_lit) in
-                 k acc lit' elt subst
-               with UnifFailure -> acc)
-            set acc
-        | Node (_, subtries), i ->
-          begin
-            match literal.(i) with
-            | Var _ -> try_with subtries acc __star i
-            | Pair _ -> try_with subtries acc __pair i
-            | Const _ ->
-              let acc' = try_with subtries acc __star i in
-              try_with subtries acc' literal.(i) i
-          end
+      | Node (set, _), i when i = len ->
+        DataSet.fold
+          (fun (lit',elt) () acc ->
+            try
+              let subst = matching (lit',o_t) (literal,o_lit) in
+              k acc lit' elt subst
+            with UnifFailure -> acc)
+          set acc
+      | Node (_, subtries), i ->
+        if is_var literal.(i)
+          then try_with subtries acc __star i
+          else
+            let acc' = try_with subtries acc __star i in
+            try_with subtries acc' literal.(i) i
       (* try to search in the subtree annotated with given symbol/var *)
       and try_with subtries acc sym i =
         try let t' = TermHashtbl.find subtries sym in
-          search t' (i+1) acc
+            search t' (i+1) acc
         with Not_found -> acc
       in
       search t 0 acc
@@ -811,27 +744,25 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
       let len = Array.length literal in
       (* search in subtrie [t], with cursor at [i]-th argument of [literal] *)
       let rec search t i acc = match t, i with
-        | Node (set, _), i when i = len ->
-          DataSet.fold
-            (fun (lit',elt) () acc ->
-               try
-                 let subst = matching (literal,o_lit) (lit',o_t) in
-                 k acc lit' elt subst
-               with UnifFailure -> acc)
-            set acc
-        | Node (_, subtries), i ->
-          begin
-            match literal.(i) with
-            | Var _ -> TermHashtbl.fold
-                         (fun _ subtrie acc -> search subtrie (i+1) acc)
-                         subtries acc
-            | Const _ -> try_with subtries acc literal.(i) i
-            | Pair _ -> try_with subtries acc __pair i
-          end         
+      | Node (set, _), i when i = len ->
+        DataSet.fold
+          (fun (lit',elt) () acc ->
+            try
+              let subst = matching (literal,o_lit) (lit',o_t) in
+              k acc lit' elt subst
+            with UnifFailure -> acc)
+          set acc
+      | Node (_, subtries), i ->
+        if is_var literal.(i)
+          then  (* fold on all subtries *)
+            TermHashtbl.fold
+              (fun _ subtrie acc -> search subtrie (i+1) acc)
+              subtries acc
+          else try_with subtries acc literal.(i) i
       (* try to search in the subtree annotated with given symbol/var *)
       and try_with subtries acc sym i =
         try let t' = TermHashtbl.find subtries sym in
-          search t' (i+1) acc
+            search t' (i+1) acc
         with Not_found -> acc
       in
       search t 0 acc
@@ -841,34 +772,27 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
       let len = Array.length literal in
       (* search in subtrie [t], with cursor at [i]-th argument of [literal] *)
       let rec search t i acc = match t, i with
-        | Node (set, _), i when i = len ->
-          DataSet.fold
-            (fun (lit',elt) () acc ->
-               try
-                 let subst = unify (literal,o_lit) (lit',o_t) in
-                 k acc lit' elt subst
-               with UnifFailure -> acc)
-            set acc
-        | Node (_, subtries), i ->
-          begin
-            match literal.(i) with
-            | Var _ -> (* fold on all subtries *)
-              TermHashtbl.fold
-                (fun _ subtrie acc -> search subtrie (i+1) acc)
-                subtries acc
-            | Pair _ -> 
-              (* try both subtrie with same symbol, and subtrie with variable *)
-              let acc' = try_with subtries acc __pair i in
-              try_with subtries acc' __star i
-            | Const _ ->
-              (* try both subtrie with same symbol, and subtrie with variable *)
-              let acc' = try_with subtries acc literal.(i) i in
-              try_with subtries acc' __star i
-          end
+      | Node (set, _), i when i = len ->
+        DataSet.fold
+          (fun (lit',elt) () acc ->
+            try
+              let subst = unify (literal,o_lit) (lit',o_t) in
+              k acc lit' elt subst
+            with UnifFailure -> acc)
+          set acc
+      | Node (_, subtries), i ->
+        if is_var literal.(i)
+          then  (* fold on all subtries *)
+            TermHashtbl.fold
+              (fun _ subtrie acc -> search subtrie (i+1) acc)
+              subtries acc
+          else (* try both subtrie with same symbol, and subtrie with variable *)
+            let acc' = try_with subtries acc literal.(i) i in
+            try_with subtries acc' __star i
       (* try to search in the subtree annotated with given symbol/var *)
       and try_with subtries acc sym i =
         try let t' = TermHashtbl.find subtries sym in
-          search t' (i+1) acc
+            search t' (i+1) acc
         with Not_found -> acc
       in
       search t 0 acc
@@ -878,19 +802,19 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
       let len = Array.length literal in
       (* search in subtrie [t], with cursor at [i]-th argument of [literal] *)
       let rec search t i acc = match t, i with
-        | Node (set, _), i when i = len ->
-          DataSet.fold
-            (fun (lit',elt) () acc ->
-               try
-                 let subst = alpha_equiv (literal,o_lit) (lit',o_t) in
-                 k acc lit' elt subst
-               with UnifFailure -> acc)
-            set acc
-        | Node (_, subtries), i ->
-          let c = term_to_char literal.(i) in
-          try let t' = TermHashtbl.find subtries c in
+      | Node (set, _), i when i = len ->
+        DataSet.fold
+          (fun (lit',elt) () acc ->
+            try
+              let subst = alpha_equiv (literal,o_lit) (lit',o_t) in
+              k acc lit' elt subst
+            with UnifFailure -> acc)
+          set acc
+      | Node (_, subtries), i ->
+        let c = term_to_char literal.(i) in
+        try let t' = TermHashtbl.find subtries c in
             search t' (i+1) acc
-          with Not_found -> acc
+        with Not_found -> acc
       in
       search t 0 acc
 
@@ -899,8 +823,8 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
       | Node (set, subtries) ->
         (* fold on elements at this point *)
         let acc = DataSet.fold
-            (fun (lit,elt) () acc -> k acc lit elt)
-            set acc in
+          (fun (lit,elt) () acc -> k acc lit elt)
+          set acc in
         (* fold on subtries *)
         TermHashtbl.fold
           (fun _ subtrie acc -> fold k acc subtrie)
@@ -917,16 +841,16 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
   exception UnsafeClause
 
   module ClausesIndex = MakeIndex(struct
-      type t = clause
-      let equal = eq_clause
-      let hash = hash_clause
-    end)
+    type t = clause
+    let equal = eq_clause
+    let hash = hash_clause
+  end)
 
   module GoalIndex = MakeIndex(struct
-      type t = unit
-      let equal () () = true
-      let hash () = 0
-    end)
+    type t = unit
+    let equal () () = true
+    let hash () = 0
+  end)
 
   (** Hashtable on clauses *)
   module ClauseHashtbl = Hashtbl.Make(
@@ -995,7 +919,6 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
 
   (** Is the clause member of the DB? *)
   let db_mem db clause =
-    pp_clause Format.std_formatter clause;
     assert (check_safe clause);
     ClauseHashtbl.mem db.db_all clause
 
@@ -1005,17 +928,16 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
     let rec rewrite_lit db_funs lit =
       match lit.(0) with
       | Var _ -> assert false
-      | Pair (_s, _t) -> assert false
       | Const s ->
         let lit' = try
-            let f = SymbolHashtbl.find db.db_funs s in
-            let lit' = f (open_literal lit) in
-            let lit' = of_soft_lit lit' in
-            lit'
-          with Not_found ->
-            lit
-        in
-        if lit == lit' || eq_literal lit lit'
+          let f = SymbolHashtbl.find db.db_funs s in
+          let lit' = f (open_literal lit) in
+          let lit' = of_soft_lit lit' in
+          lit'
+        with Not_found ->
+          lit
+      in
+      if lit == lit' || eq_literal lit lit'
         then lit'  (* fixpoint *)
         else rewrite_lit db_funs lit'
     in
@@ -1032,7 +954,7 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
     else if is_fact clause then (
       ClausesIndex.add db.db_facts clause.(0) clause;
       (* call handler for this fact, if any *)
-      let s = match clause.(0).(0) with Const s -> s | Var _ | Pair _ -> assert false in
+      let s = match clause.(0).(0) with Const s -> s | Var _ -> assert false in
       let call_handler h =
         try h clause.(0)
         with e ->
@@ -1051,22 +973,21 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
          the fact is ground. *)
       ClausesIndex.retrieve_generalizations
         (fun () _ clause' subst ->
-           (* subst(clause'.(1)) = clause.(0) , remove the first element of the
-              body of subst(clause'), that makes a new clause *)
-           let clause'' = remove_first_subst subst (clause',0) in
-           let explanation = Resolution (clause', clause.(0)) in
-           Queue.push (`AddClause (clause'', explanation)) db.db_queue)
+          (* subst(clause'.(1)) = clause.(0) , remove the first element of the
+             body of subst(clause'), that makes a new clause *)
+          let clause'' = remove_first_subst subst (clause',0) in
+          let explanation = Resolution (clause', clause.(0)) in
+          Queue.push (`AddClause (clause'', explanation)) db.db_queue)
         () (db.db_selected,0) (clause.(0),0)
     ) else (
-      pp_clause Format.std_formatter clause;
       assert (Array.length clause > 1);
       (* check if some goal unifies with head of clause *)
       let offset = offset clause in
       GoalIndex.retrieve_unify
         (fun () _goal () subst ->
-           (* subst(goal) = subst(clause.(0)), so subst(clause.(1)) is a goal *)
-           let new_goal = subst_literal subst (clause.(1),0) in
-           Queue.push (`AddGoal new_goal) db.db_queue)
+          (* subst(goal) = subst(clause.(0)), so subst(clause.(1)) is a goal *)
+          let new_goal = subst_literal subst (clause.(1),0) in
+          Queue.push (`AddGoal new_goal) db.db_queue)
         () (db.db_goals,offset) (clause.(0),0);
       (* add to index *)
       ClausesIndex.add db.db_selected clause.(1) clause;
@@ -1075,10 +996,10 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
          first body literal of the clause *)
       ClausesIndex.retrieve_specializations
         (fun () fact _ subst ->
-           (* subst(clause.body.(0)) = fact, remove this first literal *)
-           let clause' = remove_first_subst subst (clause,0) in
-           let explanation = Resolution (clause, fact) in
-           Queue.push (`AddClause (clause', explanation)) db.db_queue)
+          (* subst(clause.body.(0)) = fact, remove this first literal *)
+          let clause' = remove_first_subst subst (clause,0) in
+          let explanation = Resolution (clause, fact) in
+          Queue.push (`AddClause (clause', explanation)) db.db_queue)
         () (db.db_facts,offset) (clause.(1),0)
     )
 
@@ -1094,9 +1015,9 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
       (* find clauses that may help solving this goal *)
       ClausesIndex.retrieve_unify
         (fun () _head clause subst ->
-           (* subst(clause.(0)) = subst(lit), so subst(clause.(1)) is a new goal *)
-           let new_goal = subst_literal subst (clause.(1),offset) in
-           Queue.push (`AddGoal new_goal) db.db_queue)
+          (* subst(clause.(0)) = subst(lit), so subst(clause.(1)) is a new goal *)
+          let new_goal = subst_literal subst (clause.(1),offset) in
+          Queue.push (`AddGoal new_goal) db.db_queue)
         () (db.db_heads,offset) (lit,0)
     with Exit ->
       (* goal already present (in an alpha-equivalent form) *)
@@ -1151,14 +1072,16 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
   let db_query db pattern vars k =
     ClausesIndex.retrieve_specializations
       (fun () _lit _ subst ->
-         let terms = List.map
-             (fun i ->
-                let v = mk_var i in
-                let t, _ = deref subst v 1 in
-                t)
-             vars in
-         (* yield the list of terms *)
-         k terms)
+        let terms = List.map
+          (fun i ->
+            let v = mk_var i in
+            let t, _ = deref subst v 1 in
+            match t with
+            | Var _ -> assert false  (* should be ground *)
+            | Const s -> s)
+          vars in
+        (* yield the list of terms *)
+        k terms)
       () (db.db_facts,0) (pattern,1)
 
   (** Size of the DB *)
@@ -1210,9 +1133,9 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
         | ExtExplanation _
         | Axiom -> ()
         | Resolution (clause, fact) -> begin
-            search clause;
-            search [|fact|]
-          end
+          search clause;
+          search [|fact|]
+        end
       end
     in
     (* once the set is collected, convert it to list *)
@@ -1239,10 +1162,10 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
 
   module Query = struct
     module RowTable = Hashtbl.Make(struct
-        type t = term array
-        let equal = eq_literal
-        let hash = hash_literal
-      end)
+      type t = term array
+      let equal = eq_literal
+      let hash = hash_literal
+    end)
 
     type set = {
       db : db;
@@ -1267,8 +1190,8 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
     (* union of two sets of variable *)
     let union_vars l1 l2 =
       let l = Array.fold_left
-          (fun acc x -> if List.mem x acc then acc else x :: acc)
-          (Array.to_list l2) l1
+        (fun acc x -> if List.mem x acc then acc else x :: acc)
+        (Array.to_list l2) l1
       in
       Array.of_list (List.sort compare l)
 
@@ -1276,22 +1199,22 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
     let common_vars l1 l2 =
       let l2 = Array.to_list l2 in
       let l = Array.fold_left
-          (fun acc x -> if List.mem x l2 then x :: acc else acc)
-          [] l1
+        (fun acc x -> if List.mem x l2 then x :: acc else acc)
+        [] l1
       in
       Array.of_list l
 
     (* build a query from an expression *)
     let mk_query expr =
       let q_vars = match expr with
-        | Match (_, vars, _) -> vars
-        | Join (q1, q2) ->
-          if common_vars q1.q_vars q2.q_vars = [||]
+      | Match (_, vars, _) -> vars
+      | Join (q1, q2) ->
+        if common_vars q1.q_vars q2.q_vars = [||]
           then Array.append q1.q_vars q2.q_vars
           else union_vars q1.q_vars q2.q_vars
-        | ProjectJoin (vars, _, _) -> vars
-        | Project (vars, _) -> vars
-        | AntiJoin (q1, _q2) -> q1.q_vars
+      | ProjectJoin (vars, _, _) -> vars
+      | Project (vars, _) -> vars
+      | AntiJoin (q1, _q2) -> q1.q_vars
       in
       { q_expr = expr; q_table = None; q_vars; }
 
@@ -1309,11 +1232,11 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
     (* list of (var, index) for each variables in literal *)
     let vars_index_of_lit lit =
       let vars, indexes, _ = Array.fold_left
-          (fun (vars,indexes,idx) t -> match t with
-             | Var i when not (List.mem i vars) ->
-               i::vars, idx::indexes, idx+1
-             | _ -> vars, indexes, idx+1)
-          ([], [], 0) lit
+        (fun (vars,indexes,idx) t -> match t with
+          | Var i when not (List.mem i vars) ->
+            i::vars, idx::indexes, idx+1
+          | _ -> vars, indexes, idx+1)
+        ([], [], 0) lit
       in
       Array.of_list vars, Array.of_list indexes
 
@@ -1325,8 +1248,8 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
         mk_query (ProjectJoin (vars, q1, q2))
       | Project (vars, q') ->
         if vars = q'.q_vars
-        then optimize q'  (* reord is the identity *)
-        else mk_query (Project (vars, optimize q'))
+          then optimize q'  (* reord is the identity *)
+          else mk_query (Project (vars, optimize q'))
       | ProjectJoin (vars, q1, q2) ->
         let q1 = optimize q1 in
         let q2 = optimize q2 in
@@ -1336,9 +1259,9 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
         let q1 = optimize q1 in
         let q2 = optimize q2 in
         if common_vars q1.q_vars q2.q_vars = [||]
-        then q1 (* diff is trivial *)
-        else (* TODO: try to push antijoins in q1? *)
-          mk_query (AntiJoin (optimize q1, optimize q2))
+          then q1 (* diff is trivial *)
+          else (* TODO: try to push antijoins in q1? *)
+            mk_query (AntiJoin (optimize q1, optimize q2))
       | Match _ -> q
 
     (** Given a list of variables, and a list of literals that contain those
@@ -1363,19 +1286,19 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
           combine_queries q'' lits'
       in
       let q = match lits with
-        | [] -> failwith "Datalog.Query.ask: require at least one literal"
-        | lit::lits' ->
-          (* initial query, to combine with other queries *)
-          let q_lit = build_query lit in
-          combine_queries q_lit lits'
+      | [] -> failwith "Datalog.Query.ask: require at least one literal"
+      | lit::lits' ->
+        (* initial query, to combine with other queries *)
+        let q_lit = build_query lit in
+        combine_queries q_lit lits'
       in
       (* negations *)
       let q = match neg with
-        | [] -> q
-        | lit::lits ->
-          let q_neg = build_query lit in
-          let q_neg = combine_queries q_neg lits in
-          mk_query (AntiJoin (q, q_neg))
+      | [] -> q
+      | lit::lits ->
+        let q_neg = build_query lit in
+        let q_neg = combine_queries q_neg lits in
+        mk_query (AntiJoin (q, q_neg))
       in
       (* project columns *)
       let q = mk_query (Project (vars, q)) in
@@ -1394,12 +1317,12 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
         the index of the first occurrence of [v] in [l]. *)
     let find_indexes vars l =
       Array.map (fun v ->
-          try
-            Array.iteri (fun i v' -> if v = v' then raise (Found i)) l;
-            raise Not_found
-          with Found i ->
-            i)
-        vars
+        try
+          Array.iteri (fun i v' -> if v = v' then raise (Found i)) l;
+          raise Not_found
+        with Found i ->
+          i)
+      vars
 
     (** Evaluate the query set *)
     let rec eval db query =
@@ -1407,37 +1330,37 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
       | Some l -> l
       | None ->
         let tbl = match query.q_expr with
-          | Match (lit, vars, indexes) ->
-            let tbl = mk_table vars in
-            (* iterate on literals that match [lit] *)
-            db_match db lit
-              (fun lit' ->
-                 let row = project indexes lit' in
-                 add_table tbl row);
-            tbl
-          | Project (vars, q) ->
-            let tbl = eval db q in
-            (* map variables to their index in the input table *)
-            let indexes = find_indexes vars tbl.tbl_vars in
-            let result = mk_table vars in
-            (* project each input tuple *)
-            iter_table tbl
-              (fun row ->
-                 let row' = project indexes row in
-                 add_table result row');
-            result
-          | ProjectJoin (vars, q1, q2) ->
-            eval_join ~vars db q1 q2
-          | Join (q1, q2) ->
-            eval_join ?vars:None db q1 q2
-          | AntiJoin (q1, q2) ->
-            let tbl1 = eval db q1 in
-            let tbl2 = eval db q2 in
-            antijoin tbl1 tbl2
-        in
-        (* save result before returning it *)
-        query.q_table <- Some tbl;
-        tbl
+        | Match (lit, vars, indexes) ->
+          let tbl = mk_table vars in
+          (* iterate on literals that match [lit] *)
+          db_match db lit
+            (fun lit' ->
+              let row = project indexes lit' in
+              add_table tbl row);
+          tbl
+        | Project (vars, q) ->
+          let tbl = eval db q in
+          (* map variables to their index in the input table *)
+          let indexes = find_indexes vars tbl.tbl_vars in
+          let result = mk_table vars in
+          (* project each input tuple *)
+          iter_table tbl
+            (fun row ->
+              let row' = project indexes row in
+              add_table result row');
+          result
+        | ProjectJoin (vars, q1, q2) ->
+          eval_join ~vars db q1 q2
+        | Join (q1, q2) ->
+          eval_join ?vars:None db q1 q2
+        | AntiJoin (q1, q2) ->
+          let tbl1 = eval db q1 in
+          let tbl2 = eval db q2 in
+          antijoin tbl1 tbl2
+      in
+      (* save result before returning it *)
+      query.q_table <- Some tbl;
+      tbl
     (* special case of joins *)
     and eval_join ?vars db q1 q2 =
       (* evaluate subqueries *)
@@ -1463,8 +1386,8 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
       let tbl = mk_table vars in
       iter_table tbl1
         (fun row1 ->
-           iter_table tbl2
-             (fun row2 -> let row = Array.append row1 row2 in add_table tbl row));
+          iter_table tbl2
+            (fun row2 -> let row = Array.append row1 row2 in add_table tbl row));
       tbl
     (* projection + cartesian product *)
     and project_product ~vars tbl1 tbl2 =
@@ -1472,11 +1395,11 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
       let indexes = find_indexes vars (Array.append tbl1.tbl_vars tbl2.tbl_vars) in
       iter_table tbl1
         (fun row1 ->
-           iter_table tbl2
-             (fun row2 ->
-                let row = Array.append row1 row2 in
-                let row = project indexes row in  (* project *)
-                add_table tbl row));
+          iter_table tbl2
+            (fun row2 ->
+              let row = Array.append row1 row2 in
+              let row = project indexes row in  (* project *)
+              add_table tbl row));
       tbl
     (* join on the given list of common variables, and project on [vars] *)
     and join ~vars common tbl1 tbl2 =
@@ -1491,14 +1414,14 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
       (* join on [tbl2] *)
       iter_table tbl2
         (fun row2 ->
-           let join_items = select_indexes common_indexes row2 in
-           (* join on [join_items] *)
-           let rows1 = try Hashtbl.find idx1 join_items with Not_found -> [] in
-           List.iter
-             (fun row1 ->
-                let row = project indexes (Array.append row1 row2) in
-                add_table result row)
-             rows1);
+          let join_items = select_indexes common_indexes row2 in
+          (* join on [join_items] *)
+          let rows1 = try Hashtbl.find idx1 join_items with Not_found -> [] in
+          List.iter
+            (fun row1 ->
+              let row = project indexes (Array.append row1 row2) in
+              add_table result row)
+            rows1);
       result
     (* Antijoin of tables *)
     and antijoin tbl1 tbl2 =
@@ -1511,10 +1434,10 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
       let result = mk_table tbl1.tbl_vars in
       iter_table tbl1
         (fun row ->
-           let join_items = select_indexes common_indexes row in
-           if Hashtbl.mem idx2 join_items
-           then ()  (* drop row *)
-           else add_table result row);
+          let join_items = select_indexes common_indexes row in
+          if Hashtbl.mem idx2 join_items
+            then ()  (* drop row *)
+            else add_table result row);
       result
     (* Build an index for the given list of variables (in this order). The
         indexed rows do not contain the selected columns. *)
@@ -1523,11 +1446,11 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
       let h = Hashtbl.create 17 in
       iter_table tbl
         (fun row ->
-           (* tuple of values to index with *)
-           let indexed_items = select_indexes indexes row in
-           (* add [row] to the rows indexed by the same items *)
-           let rows = try Hashtbl.find h indexed_items with Not_found -> [] in
-           Hashtbl.replace h indexed_items (row::rows));
+          (* tuple of values to index with *)
+          let indexed_items = select_indexes indexes row in
+          (* add [row] to the rows indexed by the same items *)
+          let rows = try Hashtbl.find h indexed_items with Not_found -> [] in
+          Hashtbl.replace h indexed_items (row::rows));
       h
 
     (** Evaluate the set and iter on it *)
@@ -1547,28 +1470,28 @@ module Make(Symbol : SymbolType) : S with type symbol = Symbol.t = struct
 
     let pp_array ~sep pp_elt fmt a =
       Array.iteri (fun i x ->
-          (if i > 0 then Format.pp_print_string fmt sep);
-          pp_elt fmt x)
-        a
+        (if i > 0 then Format.pp_print_string fmt sep);
+        pp_elt fmt x)
+      a
 
     let pp_plan formatter set =
       let pp_var fmt i = Format.pp_print_int fmt i in
       let rec pp_q ~top fmt q = match q.q_expr with
-        | Match (lit, vars, _) ->
-          Format.fprintf fmt "match[%a] %a" (pp_array ~sep:"," pp_var) vars pp_literal lit
-        | Join (q1, q2) ->
-          (if not top then Format.pp_print_string fmt "(");
-          Format.fprintf fmt "%a |><| %a" (pp_q ~top:false) q1 (pp_q ~top:false) q2;
-          (if not top then Format.pp_print_string fmt ")");
-        | ProjectJoin (vars, q1, q2) ->
-          (if not top then Format.pp_print_string fmt "(");
-          Format.fprintf fmt "%a |><|_[%a] %a" (pp_q ~top:false) q1
-            (pp_array ~sep:"," pp_var) vars (pp_q ~top:false) q2;
-          (if not top then Format.pp_print_string fmt ")");
-        | AntiJoin (q1, q2) ->
-          Format.fprintf fmt "%a |> %a" (pp_q ~top:false) q1 (pp_q ~top:false) q2
-        | Project (vars, q) ->
-          Format.fprintf fmt "project[%a] %a" (pp_array ~sep:"," pp_var) vars (pp_q ~top:false) q
+      | Match (lit, vars, _) ->
+        Format.fprintf fmt "match[%a] %a" (pp_array ~sep:"," pp_var) vars pp_literal lit
+      | Join (q1, q2) ->
+        (if not top then Format.pp_print_string fmt "(");
+        Format.fprintf fmt "%a |><| %a" (pp_q ~top:false) q1 (pp_q ~top:false) q2;
+        (if not top then Format.pp_print_string fmt ")");
+      | ProjectJoin (vars, q1, q2) ->
+        (if not top then Format.pp_print_string fmt "(");
+        Format.fprintf fmt "%a |><|_[%a] %a" (pp_q ~top:false) q1
+          (pp_array ~sep:"," pp_var) vars (pp_q ~top:false) q2;
+        (if not top then Format.pp_print_string fmt ")");
+      | AntiJoin (q1, q2) ->
+        Format.fprintf fmt "%a |> %a" (pp_q ~top:false) q1 (pp_q ~top:false) q2
+      | Project (vars, q) ->
+        Format.fprintf fmt "project[%a] %a" (pp_array ~sep:"," pp_var) vars (pp_q ~top:false) q
       in pp_q ~top:true formatter set.query
   end
 end

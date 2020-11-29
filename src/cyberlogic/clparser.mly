@@ -124,7 +124,6 @@ term:
   | LOWER_WORD { Clast.Const $1 }
   | UPPER_WORD { Clast.Var $1 }
   | SINGLE_QUOTED { Clast.Quoted $1 }
-  | LEFT_BRACKET term COMMA term RIGHT_BRACKET { Clast.Pair ($2, $4) }
 
 principal:
   | SINGLE_QUOTED { without_quotes $1 }

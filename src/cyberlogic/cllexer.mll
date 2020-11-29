@@ -48,8 +48,6 @@ rule token =
       | number                       { INT(Lexing.lexeme lexbuf) }
       | '('                          { LEFT_PARENTHESIS }
       | ')'                          { RIGHT_PARENTHESIS }
-      | '['                          { LEFT_BRACKET }
-      | ']'                          { RIGHT_BRACKET }
       | '.'                          { DOT }
       | ":-"                         { IF }
       | "<-"                         { IF }
