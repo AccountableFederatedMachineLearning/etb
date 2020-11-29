@@ -49,7 +49,8 @@ module Cyberlogic = struct
 
   (* Parsing *)
 
-  (* The following parsing code is adapted from datalog/default.ml *)
+  (* The following parsing code is adapted from datalog/default.ml
+     Please refer to datalog/LICENSE for license information *)
 
   module A = Clast
 
