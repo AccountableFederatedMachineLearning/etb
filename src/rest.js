@@ -17,8 +17,8 @@ async function main() {
   var args = process.argv.slice(2);
 
   // First argument must be source file
-  if (args.length < 1) {
-    console.error("Usage: main <userId> <file.dl> [port]");
+  if (args.length < 2) {
+    console.error("Usage: main <userId> <datalog_source.dl> [port]");
     process.exit(1)
   }
   const walletId = args[0];
@@ -34,7 +34,7 @@ async function main() {
   var source;
   try {
     source = fs.readFileSync(sourceFile).toString()
-    logger.debug("Clauses\n" + source);
+    logger.debug("Using the following source code:\n" + source);
   } catch (err) {
     console.error("Cannot read file '" + sourceFile + "'.");
     console.error(err.message);

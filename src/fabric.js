@@ -32,10 +32,13 @@ async function readConnectionProfile() {
 async function getUserCertificate(userId) {
   const wallet = await readWallet();
   const identity = await wallet.get(userId);
-  if (identity && identity.type === 'X.509') {
-    return identity.credentials.certificate;
+  if (!identity) {
+    throw "Cannot find user '" + userId + "' in wallet."
   }
-  return null;
+  if (identity.type !== 'X.509') {
+    throw "User certificate not in X.509 format."
+  }
+  return identity.credentials.certificate;
 }
 
 async function connect(userId) {
