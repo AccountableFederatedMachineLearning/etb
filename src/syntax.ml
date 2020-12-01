@@ -111,22 +111,6 @@ module Cyberlogic = struct
                          literal_of_ast id defs col ~tbl x) l in
       Clause.make a l
 
-(*
-  let query_of_ast id defs q = match q with
-    | A.Query (vars, lits, neg) ->
-      let tbl = mk_vartbl () in
-      let lits = List.map (literal_of_ast id defs ~tbl) lits in
-      let neg = List.map (literal_of_ast id defs ~tbl) neg in
-      let vars = Array.of_list vars in
-      let vars = Array.map
-          (fun t -> match term_of_ast ~tbl t with
-             | Var i -> i
-             | Const _ -> failwith "query_of_ast: expected variables")
-          vars
-      in
-      vars, lits, neg
-      *)
-
   let parse_literal_exn id col s = 
     let lex = Lexing.from_string s in
     let ac = parse_with_exn Clparser.parse_literal Cllexer.token lex in

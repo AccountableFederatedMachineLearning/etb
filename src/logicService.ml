@@ -172,13 +172,6 @@ let goal t goal =
   Cyberlogic.db_goal t.db yellow_goal;
   flush_pending t
 
-(*
-let register_service t symbol handler =
-  Cyberlogic.db_subscribe_goal t.db (fun goal ->
-      let (f, _) = open_literal goal in
-      if f = symbol then handler goal else ())
-*) 
-
 let connect_to_contract t contract = 
   Logger.info "Connecting to contract";
   t.contract <- Some contract;

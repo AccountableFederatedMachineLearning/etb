@@ -131,7 +131,7 @@ implemented:
 - `length(json_array, len)`: Length of JSON arrays. 
    For example, we have `length('[1, 2, 3]', 3)`.
 
-- `let(json_object, field, value)`: Accessing fields of JSON objects.
+- `get(json_object, field, value)`: Accessing fields of JSON objects.
    For example, we have `get('{"test": 4}', 'test', 4)`.
 
 # TODOs
