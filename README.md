@@ -83,13 +83,15 @@ track updates
     ```
 
   If one adds the fact `b('[1,2,3]')`, then the clause can derive `a(3)`.
-  By default, this does not happen automatically, since the engine does
-  not know which instances of `length(Y, X)` to add.
+  By default, this does not happen automatically, since instances of
+  `length(Y, X)` are only added on demand. The implementation does
+  not know in advance that it will need `length([1,2,3], 3)`, even though
+  it knows how to add it when needed.
   
-  However, one can achieve this by making `a(X)` a goal.
-  After each change to the database, the engine will then check by
+  However, one can make `a(X)` a goal. Then, after each change to the 
+  database, the engine will then check by
   backchaining what needs to be proved to establish `a(X)`. It will
-  add suitable instances of `length(Y, X)` when required thus.
+  add suitable instances of `length(Y, X)` as required.
 
 # Syntax of Logic Programs
 
@@ -125,7 +127,7 @@ a claim for a principal other than the one running the node
 
 ## JSON
 
-The following operations for working with JSON-values are currently 
+The following operations on JSON-values are currently 
 implemented:
 
 - `length(json_array, len)`: Length of JSON arrays. 
@@ -133,6 +135,16 @@ implemented:
 
 - `get(json_object, field, value)`: Accessing fields of JSON objects.
    For example, we have `get('{"test": 4}', 'test', 4)`.
+
+## Integers
+
+The following operations for working with ints are currently 
+implemented. (These are untested; more can be added by need)
+
+- `lt(i, j)`, `eq(i, j)`, `gt(i, j)`: Test for less-than, equality, and greater-than.
+
+- `add(i, j, n)`, `mul(i, j, n)`: Addition and Multiplication.
+
 
 # TODOs
 

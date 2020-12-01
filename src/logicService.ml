@@ -91,7 +91,36 @@ let json_handler t : Cyberlogic.goal_handler =
           (* if anything fails, add nothing *)
         end
       | _ -> ()
-    end 
+    end     
+
+let int_handler t : Cyberlogic.goal_handler =
+  let int_of_symbol s = int_of_string (Default.StringSymbol.to_string s) in
+  let const_of_int i = Default.mk_const (Default.StringSymbol.make (string_of_int i)) in
+  fun (goal : Cyberlogic.Literal.t) ->
+    let h, a = Default.open_literal (Cyberlogic.Literal.plain_literal goal) in
+    try
+      match Default.StringSymbol.to_string h, a with
+      | "lt", [Const i; Const j] -> 
+        if int_of_symbol i < int_of_symbol j then
+          Cyberlogic.db_add_fact t.db (Cyberlogic.Literal.make h Cyberlogic.Yellow t.id a)
+      | "eq", [Const i; Const j] -> 
+        if int_of_symbol i = int_of_symbol j then
+          Cyberlogic.db_add_fact t.db (Cyberlogic.Literal.make h Cyberlogic.Yellow t.id a)
+      | "gt", [Const i; Const j] -> 
+        if int_of_symbol i > int_of_symbol j then
+          Cyberlogic.db_add_fact t.db (Cyberlogic.Literal.make h Cyberlogic.Yellow t.id a)
+      | "add", [Const i as i_const; Const j as j_const; _] ->         
+        Cyberlogic.db_add_fact t.db 
+          (Cyberlogic.Literal.make h Cyberlogic.Yellow t.id 
+             [i_const; j_const; const_of_int (int_of_symbol i + int_of_symbol j)])
+      | "mul", [Const i as i_const; Const j as j_const; _] ->         
+        Cyberlogic.db_add_fact t.db 
+          (Cyberlogic.Literal.make h Cyberlogic.Yellow t.id 
+             [i_const; j_const; const_of_int (int_of_symbol i * int_of_symbol j)])
+      | _ -> ()
+    with 
+    (* if anything fails, do nothing *)
+    | _ -> ()
 
 (** Payload of claim events *)
 module ClaimEvent = struct
@@ -145,6 +174,7 @@ let create id clauses =
   } in
   Cyberlogic.db_subscribe_all_facts t.db (log_yellow_facts t);
   Cyberlogic.db_subscribe_goal t.db (json_handler t);
+  Cyberlogic.db_subscribe_goal t.db (int_handler t);
   clauses |> List.iter (fun clause ->
       Logger.debug (Syntax.Cyberlogic.short_clause clause);
       Cyberlogic.db_add t.db clause
