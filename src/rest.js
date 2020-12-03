@@ -8,6 +8,7 @@ const id = require('./id.bs')
 const logicService = require('./logicService.bs')
 const rest = require('./rest.bs')
 const app = express()
+const bodyParser = require('body-parser');
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 
@@ -57,6 +58,8 @@ async function main() {
     return;
   }
 
+  app.use(bodyParser.json());
+
   // Register REST endpoints
 
   app.get('/', async (req, res) => {
@@ -68,8 +71,8 @@ async function main() {
     res.send(response)
   })
 
-  app.put('/facts/:fact', async (req, res) => {
-    const response = await rest.facts_put(db, req.params.fact);
+  app.post('/facts/add', async (req, res) => {
+    const response = await rest.facts_put(db, req.body.fact);
     return res.send(response)
   })
 

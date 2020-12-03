@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "dependencies": {
     "@peculiar/x509": "^1.0.6",
+    "body-parser": "^1.19.0",
     "bs-express": "^1.0.2",
     "bs-winston": "^0.6.2",
     "fabric-network": "^2.2.3",
