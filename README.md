@@ -1,4 +1,3 @@
-
 # Dependencies
 
 The project should compile on Linux and only need an installation
@@ -70,8 +69,9 @@ track updates
 
 - `http GET localhost:5000/facts` lists all facts on the node in JSON format
 
-- `http PUT localhost:5000/facts/"test('dbs sd', 3)"` submits a new claim to 
-   the node. The principal is the user id with which the node was started.
+- `http POST localhost:5000/facts/add fact="test('dbs sd', 3)"` submits a 
+   new claim to the node. The principal is the user id with which the node 
+   was started.
 
 - `http PUT localhost:5000/goals/"test(X, 3)"` adds a goal of the given form.
   This is useful to trigger backchaining, since not *all* consequences
