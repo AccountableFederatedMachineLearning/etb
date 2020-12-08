@@ -45,6 +45,7 @@ let json_handler t : Cyberlogic.goal_handler =
        String.get s (String.length s - 1) = '\''
     then String.sub s 1 (String.length s - 2) 
     else s in
+  let int_of_symbol_exn s = int_of_string (Default.StringSymbol.to_string s) in
   let json_of_const_exn c = match c with
     | Const s -> Js.Json.parseExn (no_quotes_exn (StringSymbol.to_string s))
     | _ -> failwith "no const" in
@@ -72,7 +73,23 @@ let json_handler t : Cyberlogic.goal_handler =
             _ -> ()
           (* if anything fails, add nothing *)
         end
-      | "get", [(Const _) as obj_const; (Const field_sym) as field_const; _] -> 
+      | "array_get", [(Const _) as array_const; (Const index) as index_const; _] -> 
+        begin
+          try
+            let array = array_of_const_exn array_const in
+            let i = int_of_symbol_exn index in
+            let value_const = Array.get array i
+                              |> Js.Json.stringify
+                              |> Default.StringSymbol.make
+                              |> Default.mk_const in
+            let x = Cyberlogic.Literal.make h Cyberlogic.Yellow t.id 
+                [array_const; index_const; value_const] in
+            Cyberlogic.db_add_fact t.db x
+          with
+            _ -> ()
+          (* if anything fails, add nothing *)
+        end
+      | "object_get", [(Const _) as obj_const; (Const field_sym) as field_const; _] -> 
         begin
           try
             let obj = object_of_const_exn obj_const in
@@ -82,7 +99,6 @@ let json_handler t : Cyberlogic.goal_handler =
                               |> Js.Json.stringify
                               |> Default.StringSymbol.make
                               |> Default.mk_const in
-            Js.log(value_const);
             let x = Cyberlogic.Literal.make h Cyberlogic.Yellow t.id 
                 [obj_const; field_const; value_const] in
             Cyberlogic.db_add_fact t.db x
@@ -100,13 +116,16 @@ let int_handler t : Cyberlogic.goal_handler =
     let h, a = Default.open_literal (Cyberlogic.Literal.plain_literal goal) in
     try
       match Default.StringSymbol.to_string h, a with
+      | "le", [Const i; Const j] -> 
+        if int_of_symbol i < int_of_symbol j then
+          Cyberlogic.db_add_fact t.db (Cyberlogic.Literal.make h Cyberlogic.Yellow t.id a)
       | "lt", [Const i; Const j] -> 
         if int_of_symbol i < int_of_symbol j then
           Cyberlogic.db_add_fact t.db (Cyberlogic.Literal.make h Cyberlogic.Yellow t.id a)
-      | "eq", [Const i; Const j] -> 
-        if int_of_symbol i = int_of_symbol j then
-          Cyberlogic.db_add_fact t.db (Cyberlogic.Literal.make h Cyberlogic.Yellow t.id a)
       | "gt", [Const i; Const j] -> 
+        if int_of_symbol i > int_of_symbol j then
+          Cyberlogic.db_add_fact t.db (Cyberlogic.Literal.make h Cyberlogic.Yellow t.id a)
+      | "ge", [Const i; Const j] -> 
         if int_of_symbol i > int_of_symbol j then
           Cyberlogic.db_add_fact t.db (Cyberlogic.Literal.make h Cyberlogic.Yellow t.id a)
       | "add", [Const i as i_const; Const j as j_const; _] ->         
@@ -121,6 +140,23 @@ let int_handler t : Cyberlogic.goal_handler =
     with 
     (* if anything fails, do nothing *)
     | _ -> ()
+
+let general_handler t : Cyberlogic.goal_handler =
+  fun (goal : Cyberlogic.Literal.t) ->
+  let h, a = Default.open_literal (Cyberlogic.Literal.plain_literal goal) in
+  try
+    match Default.StringSymbol.to_string h, a with
+    | "eq", [Const i; Const j] -> 
+      if Default.StringSymbol.equal i j then
+        Cyberlogic.db_add_fact t.db (Cyberlogic.Literal.make h Cyberlogic.Yellow t.id a)
+    | "neq", [Const i; Const j] -> 
+      if not (Default.StringSymbol.equal i j) then
+        Cyberlogic.db_add_fact t.db (Cyberlogic.Literal.make h Cyberlogic.Yellow t.id a)
+    | _ -> ()
+  with 
+  (* if anything fails, do nothing *)
+  | _ -> ()
+
 
 (** Payload of claim events *)
 module ClaimEvent = struct
@@ -175,6 +211,7 @@ let create id clauses =
   Cyberlogic.db_subscribe_all_facts t.db (log_yellow_facts t);
   Cyberlogic.db_subscribe_goal t.db (json_handler t);
   Cyberlogic.db_subscribe_goal t.db (int_handler t);
+  Cyberlogic.db_subscribe_goal t.db (general_handler t);
   clauses |> List.iter (fun clause ->
       Logger.debug (Syntax.Cyberlogic.short_clause clause);
       Cyberlogic.db_add t.db clause
