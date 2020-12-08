@@ -12,7 +12,10 @@ and clause =
   | Clause of literal * literal list
 and literal =
   | Atom of string * term list
-  | Attestation of location * string * string * term list
+  | Attestation of location * principal * string * term list
+and principal =
+  | PrincipalVar of string
+  | PrincipalName of string  
 and term =
   | Var of string
   | Const of string

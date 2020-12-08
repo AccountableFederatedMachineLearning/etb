@@ -29,15 +29,31 @@ let is_color_term c =
 
 (** Principals encoded as constant terms *)
 
-let principal_term id = 
-  mk_const (StringSymbol.make (Id.to_string id))
+type principal =
+  | PrincipalId of Id.t
+  | PrincipalVar of int
+
+type principal_json =
+  | PrincipalIdJSON of { subject : Id.DN.t_json; issuer: Id.DN.t_json }
+  | PrincipalVarJSON of { var : int }
+
+let principal_term p = 
+  match p with 
+  | PrincipalVar i -> mk_var i
+  | PrincipalId id -> mk_const (StringSymbol.make (Id.to_string id))
 
 let principal_from_term c = 
   match c with
-  | Var _ -> failwith "color is variable"
+  | Var i -> PrincipalVar i
   | Const p -> 
     let s = StringSymbol.to_string p in
-    Id.from_string_exn s
+    PrincipalId (Id.from_string_exn s)
+
+let principal_to_json p = 
+  match p with 
+  | PrincipalVar i -> PrincipalVarJSON { var = i }
+  | PrincipalId id -> PrincipalIdJSON { subject = Id.DN.to_json id.subject;
+                                        issuer = Id.DN.to_json id.issuer }
 
 (** Literals *)
 
@@ -47,7 +63,7 @@ module Literal = struct
 
   type t_json = {
     color : string;
-    principal : Id.t_json;
+    principal : principal_json;
     literal : string
   }
 
@@ -79,9 +95,9 @@ module Literal = struct
         match color literal with
         | Yellow -> "yellow"
         | Green -> "green"
-        | ColorVar _ -> "black"
+        | ColorVar i -> "X" ^ (string_of_int i)
       end;
-    principal = Id.to_json (principal literal);
+    principal = principal_to_json (principal literal);
     literal =      
       let p = plain_literal literal in
       Default.pp_literal Format.str_formatter p;
@@ -110,17 +126,6 @@ module Clause = struct
 
 end
 
-(*
-let pretty_string literal =
-  let color = match color literal with 
-    | Yellow -> "yellow"
-    | Green -> "green" in
-  let principal = match Id.Name.get (principal literal).subject "CN" with
-    | None -> "<unknown>"
-    | Some n -> n in
-  let claim = Syntax.string_of_literal (plain_literal literal) in
-  principal ^ " says " ^ claim ^ " [" ^ color ^ "]"
-*)
 (* Database *)
 type db = Default.db
 

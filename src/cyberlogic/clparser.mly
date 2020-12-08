@@ -126,4 +126,5 @@ term:
   | SINGLE_QUOTED { Clast.Quoted $1 }
 
 principal:
-  | SINGLE_QUOTED { without_quotes $1 }
+  | UPPER_WORD { Clast.PrincipalVar $1 }
+  | SINGLE_QUOTED { Clast.PrincipalName (without_quotes $1) }

@@ -3,19 +3,27 @@ type color =
   | Green
   | ColorVar of int
 
+type principal =
+  | PrincipalId of Id.t
+  | PrincipalVar of int
+
+type principal_json =
+  | PrincipalIdJSON of { subject : Id.DN.t_json; issuer: Id.DN.t_json }
+  | PrincipalVarJSON of { var : int }
+
 module Literal : sig
 
   type t
 
   type t_json = {
     color : string;
-    principal : Id.t_json;
+    principal : principal_json;
     literal : string
   }
 
-  val make : Default.symbol -> color -> Id.t -> Default.term list -> t
+  val make : Default.symbol -> color -> principal -> Default.term list -> t
   val color : t -> color
-  val principal : t -> Id.t
+  val principal : t -> principal
   val plain_literal : t -> Default.literal
 
   val to_json : t -> t_json
