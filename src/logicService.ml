@@ -149,7 +149,7 @@ let general_handler t : Cyberlogic.goal_handler =
     | "eq", [Const i; Const j] -> 
       if Default.StringSymbol.equal i j then
         Cyberlogic.db_add_fact t.db (Cyberlogic.Literal.make h Cyberlogic.Yellow t.id a)
-    | "neq", [Const i; Const j] -> 
+    | "ne", [Const i; Const j] -> 
       if not (Default.StringSymbol.equal i j) then
         Cyberlogic.db_add_fact t.db (Cyberlogic.Literal.make h Cyberlogic.Yellow t.id a)
     | _ -> ()

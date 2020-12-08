@@ -24,7 +24,8 @@ this file is part of datalog. See README for the license
 %token IF
 %token NOT
 %token COMMA
-%token SAYS
+%token ATTESTS
+%token LT LE GT GE EQ NE
 %token EQUALS
 %token COLON
 %token SUBJECT
@@ -38,8 +39,8 @@ this file is part of datalog. See README for the license
 %start parse_literal
 %type <Clast.literal> parse_literal
 
-%start parse_literals
-%type <Clast.literal list> parse_literals
+%start parse_attested_literals
+%type <Clast.attested_literal list> parse_attested_literals
 
 %start parse_clause
 %type <Clast.clause> parse_clause
@@ -58,8 +59,8 @@ parse_file:
 parse_literal:
   | literal EOI { $1 }
 
-parse_literals:
-  | literals EOI { $1 }
+parse_attested_literals:
+  | attested_literals EOI { $1 }
 
 parse_clause:
   | clause EOI { $1 }
@@ -85,20 +86,27 @@ clauses:
 
 clause:
   | literal DOT { Clast.Clause ($1, []) }
-  | literal IF literals DOT { Clast.Clause ($1, $3) }
+  | literal IF attested_literals DOT { Clast.Clause ($1, $3) }
 
-literals:
-  | literal { [$1] }
-  | literal COMMA literals { $1 :: $3 }
+attested_literals:
+  | attested_literal { [$1] }
+  | attested_literal COMMA attested_literals { $1 :: $3 }
+
+attested_literal:
+  | literal { Clast.Unattested $1 }
+  | principal ATTESTS literal 
+     { Clast.Attested (current_location (), $1, $3) }
 
 literal:
   | LOWER_WORD { Clast.Atom ($1, []) }
   | LOWER_WORD LEFT_PARENTHESIS args RIGHT_PARENTHESIS
     { Clast.Atom ($1, $3) }
-  | principal SAYS LOWER_WORD 
-    { Clast.Attestation (current_location (), $1, $3, []) }
-  | principal SAYS LOWER_WORD LEFT_PARENTHESIS args RIGHT_PARENTHESIS
-    { Clast.Attestation (current_location (), $1, $3, $5) }
+  | term LT term   { Clast.Atom ("lt", [$1; $3]) }
+  | term LE term   { Clast.Atom ("le", [$1; $3]) }
+  | term GT term   { Clast.Atom ("gt", [$1; $3]) }
+  | term GE term   { Clast.Atom ("ge", [$1; $3]) }
+  | term EQ term   { Clast.Atom ("eq", [$1; $3]) }
+  | term NE term   { Clast.Atom ("ne", [$1; $3]) }
 
 query:
   | LEFT_PARENTHESIS args RIGHT_PARENTHESIS IF signed_literals

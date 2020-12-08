@@ -120,10 +120,15 @@ Here is an example to show the syntax:
 b(1) :- 'user1' says b(1), 'user2' says b(1).
 ```
 
+It is also possible to use principal variables.
+```
+b(1) :- 'user1' says b(1), P says b(1).
+```
+
 Note that, by design, a node cannot make claims for other users. 
 It therefore does not make sense to have clauses whose conclusion is
-a claim for a principal other than the one running the node
-(this requirement should be checked during parsing, but isn't currently).
+a claim for a principal other than the one running the node.
+This is in fact a syntax error.
 
 ## JSON
 
@@ -133,25 +138,30 @@ implemented:
 - `length(json_array, len)`: Length of JSON arrays. 
    For example, we have `length('[1, 2, 3]', 3)`.
 
-- `get(json_object, field, value)`: Accessing fields of JSON objects.
-   For example, we have `get('{"test": 4}', 'test', 4)`.
+- `array_get(json_array, index, value)`: Accessing fields of JSON objects.
+   For example, we have `array_get('[1, 2, 3]', 2, 3)`.
+
+- `object_get(json_object, field, value)`: Accessing fields of JSON objects.
+   For example, we have `object_get('{"test": 4}', 'test', 4)`.
 
 ## Integers
 
 The following operations for working with ints are currently 
-implemented. (These are untested; more can be added by need)
+implemented. (more to be added by need)
 
-- `lt(i, j)`, `eq(i, j)`, `gt(i, j)`: Test for less-than, equality, and greater-than.
+- `i < j`, `i <= j`, `i > j`, `i >= j`: Order relations between intergers.
 
 - `add(i, j, n)`, `mul(i, j, n)`: Addition and Multiplication.
 
+## General
+
+Equality and disequality *of constants*:
+
+- `c == d` and `c != d`.
 
 # TODOs
 
 - When started, the node should probably read existing facts from
   the ledger. Currently, it starts from an empty database.
 
-- Programs that contain clauses making claims for other principals
-  are currently accepted, but should not.
-
-- Add more primitive operations for integers, JSON, ...
+- Add more primitive operations, improve syntax.

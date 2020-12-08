@@ -87,11 +87,11 @@ module Cyberlogic = struct
       Default.mk_var (getvar ~tbl x)
 
   let literal_of_ast id defs col ?(tbl=mk_vartbl ()) lit = match lit with
-    | A.Atom (s, args) ->
+    | A.Unattested (A.Atom (s, args)) ->
       let s = Default.StringSymbol.make s in
       let args = List.map (term_of_ast ~tbl) args in
       Literal.make s col id args
-    | A.Attestation (loc, p, s, args) ->
+    | A.Attested (loc, p, A.Atom (s, args)) ->
       let s = Default.StringSymbol.make s in
       let args = List.map (term_of_ast ~tbl) args in
       let principal  = 
@@ -109,7 +109,7 @@ module Cyberlogic = struct
   let clause_of_ast id defs c = match c with
     | A.Clause (a, l) ->
       let tbl = mk_vartbl () in
-      let a = literal_of_ast id defs Cyberlogic.Yellow ~tbl a in
+      let a = literal_of_ast id defs Cyberlogic.Yellow ~tbl (A.Unattested a) in
       let l = List.map (fun x -> let col = Cyberlogic.ColorVar(nextvar ~tbl ()) in 
                          literal_of_ast id defs col ~tbl x) l in
       Clause.make a l
@@ -118,7 +118,7 @@ module Cyberlogic = struct
     let lex = Lexing.from_string s in
     let ac = parse_with_exn Clparser.parse_literal Cllexer.token lex in
     let defs = [] in
-    literal_of_ast id defs col ac
+    literal_of_ast id defs col (A.Unattested ac)
 
   let parse_clause_exn id s =
     let lex = Lexing.from_string s in
@@ -154,7 +154,7 @@ module Cyberlogic = struct
         | Some n -> n in
     let claim_string = Datalog.string_of_literal (Literal.plain_literal literal) in
     ansi_color ^
-    principal_string ^ " says " ^ claim_string ^ " [" ^ color_string ^ "]" ^
+    principal_string ^ " attests " ^ claim_string ^ " [" ^ color_string ^ "]" ^
     ansi_default_color
 
   let short_clause clause =

@@ -34,7 +34,7 @@ rule token =
       | ['\n']                       { Lexing.new_line lexbuf;
                                        token lexbuf } (* skip new lines *)
       | "not"                        { NOT }
-      | "says"                       { SAYS }
+      | "attests"                    { ATTESTS }
       | one_line_comment             { token lexbuf } (* skip comment *)
       | multi_line_comment           { token lexbuf } (* skip comment *)
       | multi_line_comment_unclosed  { lexing_error "Unclosed Comment" lexbuf }
@@ -51,6 +51,12 @@ rule token =
       | '.'                          { DOT }
       | ":-"                         { IF }
       | "<-"                         { IF }
+      | "<"                          { LT }
+      | "<="                         { LE }
+      | ">"                          { GT }
+      | ">="                         { GE }
+      | "=="                         { EQ }
+      | "!="                         { NE }
       | ","                          { COMMA }
       | ":"                          { COLON }
       | "="                          { EQUALS }
