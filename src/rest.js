@@ -76,8 +76,8 @@ async function main() {
     return res.send(response)
   })
 
-  app.put('/goals/:goal', async (req, res) => {
-    const response = await rest.goal_put(db, req.params.goal);
+  app.post('/goals/add', async (req, res) => {
+    const response = await rest.goal_put(db, req.body.goal);
     return res.send(response)
   })
 
