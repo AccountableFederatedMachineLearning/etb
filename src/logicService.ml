@@ -4,7 +4,7 @@ open Promise
 (** State of the logic service *)
 type t = { 
   db : Cyberlogic.db;
-  id : Cyberlogic.principal;
+  id : Cyberlogic.Principal.t;
   mutable contract : Fabric.contract option;
   mutable pending : (unit -> unit Js.Promise.t) list;
 }
@@ -192,7 +192,7 @@ let claim_event_listener t (payload: string): unit Js.Promise.t =
       let claim_event = ClaimEvent.parse_exn payload in
       let id = Id.of_DNs_exn ~subjectDN:(claim_event.subjectID) 
           ~issuerDN:(claim_event.issuerID) in
-      let principal = Cyberlogic.PrincipalId id in
+      let principal = Cyberlogic.Principal.Id id in
       let plain_literal = Syntax.Datalog.parse_literal_exn claim_event.claim in
       let (s, args) = Default.open_literal plain_literal in
       let green_literal = Cyberlogic.Literal.make s Green principal args in
@@ -205,7 +205,7 @@ let claim_event_listener t (payload: string): unit Js.Promise.t =
 let create id clauses = 
   let t = { 
     db = Cyberlogic.db_create ();
-    id = Cyberlogic.PrincipalId id;
+    id = Cyberlogic.Principal.Id id;
     contract = None;
     pending = []
   } in

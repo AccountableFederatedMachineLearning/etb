@@ -3,13 +3,20 @@ type color =
   | Green
   | ColorVar of int
 
-type principal =
-  | PrincipalId of Id.t
-  | PrincipalVar of int
+module Principal : sig
+  type t =
+    | Var of int
+    | Id of Id.t
+    | Undefined (* Neede because we don't have typed terms. It's the 
+                   catch-all for non-welltypes values. *)
 
-type principal_json =
-  | PrincipalIdJSON of { subject : Id.DN.t_json; issuer: Id.DN.t_json }
-  | PrincipalVarJSON of { var : int }
+  type t_json =
+    | VarJSON of { var : int }
+    | IdJSON of { subject : Id.DN.t_json; issuer: Id.DN.t_json }
+    | Undefined
+
+  val to_term : t -> Default.term
+end
 
 module Literal : sig
 
@@ -17,13 +24,13 @@ module Literal : sig
 
   type t_json = {
     color : string;
-    principal : principal_json;
+    principal : Principal.t_json;
     literal : string
   }
 
-  val make : Default.symbol -> color -> principal -> Default.term list -> t
+  val make : Default.symbol -> color -> Principal.t -> Default.term list -> t
   val color : t -> color
-  val principal : t -> principal
+  val principal : t -> Principal.t
   val plain_literal : t -> Default.literal
 
   val to_json : t -> t_json
