@@ -44,6 +44,7 @@ module Principal = struct
     match p with 
     | Var i -> mk_var i
     | Id id -> mk_const (StringSymbol.make (Id.to_string id))
+    | Undefined -> mk_const (StringSymbol.make "<undefined>")
 
   let from_term c = 
     match c with
@@ -60,6 +61,7 @@ module Principal = struct
     | Var i -> VarJSON { var = i }
     | Id id -> IdJSON { subject = Id.DN.to_json id.subject;
                         issuer = Id.DN.to_json id.issuer }
+    | Undefined -> Undefined
 
 end
 (** Literals *)
