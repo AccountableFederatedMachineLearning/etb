@@ -61,7 +61,8 @@
       if (document.getElementById(id) === null) {
         $('#facts')
           .append($('<li>')
-            .append($(`<div id="${id}">`)
+            .append($(`<div>`)
+              .attr("id", id)
               .text(getFirstCN(msg.principal.subject) + " attests " + msg.literal)));
       }
       $(document.getElementById(id)).addClass(msg.color);
