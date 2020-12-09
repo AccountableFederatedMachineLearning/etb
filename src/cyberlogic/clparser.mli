@@ -7,7 +7,13 @@ type token =
   | IF
   | NOT
   | COMMA
-  | SAYS
+  | ATTESTS
+  | LT
+  | LE
+  | GT
+  | GE
+  | EQ
+  | NE
   | EQUALS
   | COLON
   | SUBJECT
@@ -20,8 +26,8 @@ type token =
 
 val parse_literal :
   (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Clast.literal
-val parse_literals :
-  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Clast.literal list
+val parse_attested_literals :
+  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Clast.attested_literal list
 val parse_clause :
   (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Clast.clause
 val parse_file :

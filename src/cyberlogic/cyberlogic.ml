@@ -29,16 +29,39 @@ let is_color_term c =
 
 (** Principals encoded as constant terms *)
 
-let principal_term id = 
-  mk_const (StringSymbol.make (Id.to_string id))
+module Principal = struct
+  type t =
+    | Var of int
+    | Id of Id.t
+    | Undefined
 
-let principal_from_term c = 
-  match c with
-  | Var _ -> failwith "color is variable"
-  | Const p -> 
-    let s = StringSymbol.to_string p in
-    Id.from_string_exn s
+  type t_json =
+    | VarJSON of { var : int }
+    | IdJSON of { subject : Id.DN.t_json; issuer: Id.DN.t_json }
+    | Undefined
 
+  let to_term p = 
+    match p with 
+    | Var i -> mk_var i
+    | Id id -> mk_const (StringSymbol.make (Id.to_string id))
+
+  let from_term c = 
+    match c with
+    | Default.Var i -> Var i
+    | Const p -> 
+      try
+        let s = StringSymbol.to_string p in
+        Id (Id.from_string_exn s)
+      with _ -> 
+        Undefined
+
+  let to_json p = 
+    match p with 
+    | Var i -> VarJSON { var = i }
+    | Id id -> IdJSON { subject = Id.DN.to_json id.subject;
+                        issuer = Id.DN.to_json id.issuer }
+
+end
 (** Literals *)
 
 module Literal = struct
@@ -47,12 +70,13 @@ module Literal = struct
 
   type t_json = {
     color : string;
-    principal : Id.t_json;
+    principal : Principal.t_json;
     literal : string
   }
 
   let make s color principal args =
-    Default.mk_literal s (color_term color :: principal_term principal :: args)
+    Default.mk_literal s 
+      (color_term color :: Principal.to_term principal :: args)
 
   let color literal =
     match open_literal literal with
@@ -63,7 +87,7 @@ module Literal = struct
     match open_literal literal with
     | (_, []) -> failwith "literal has no color"
     | (_, [_]) -> failwith "literal has no princial"
-    | (_, (_ :: p :: _)) -> principal_from_term p
+    | (_, (_ :: p :: _)) -> Principal.from_term p
 
   let plain_literal literal =
     match open_literal literal with
@@ -79,9 +103,9 @@ module Literal = struct
         match color literal with
         | Yellow -> "yellow"
         | Green -> "green"
-        | ColorVar _ -> "black"
+        | ColorVar i -> "X" ^ (string_of_int i)
       end;
-    principal = Id.to_json (principal literal);
+    principal = Principal.to_json (principal literal);
     literal =      
       let p = plain_literal literal in
       Default.pp_literal Format.str_formatter p;
@@ -110,17 +134,6 @@ module Clause = struct
 
 end
 
-(*
-let pretty_string literal =
-  let color = match color literal with 
-    | Yellow -> "yellow"
-    | Green -> "green" in
-  let principal = match Id.Name.get (principal literal).subject "CN" with
-    | None -> "<unknown>"
-    | Some n -> n in
-  let claim = Syntax.string_of_literal (plain_literal literal) in
-  principal ^ " says " ^ claim ^ " [" ^ color ^ "]"
-*)
 (* Database *)
 type db = Default.db
 

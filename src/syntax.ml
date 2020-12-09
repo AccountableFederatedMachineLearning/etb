@@ -87,26 +87,29 @@ module Cyberlogic = struct
       Default.mk_var (getvar ~tbl x)
 
   let literal_of_ast id defs col ?(tbl=mk_vartbl ()) lit = match lit with
-    | A.Atom (s, args) ->
+    | A.Unattested (A.Atom (s, args)) ->
       let s = Default.StringSymbol.make s in
       let args = List.map (term_of_ast ~tbl) args in
       Literal.make s col id args
-    | A.Attestation (loc, p, s, args) ->
+    | A.Attested (loc, p, A.Atom (s, args)) ->
       let s = Default.StringSymbol.make s in
       let args = List.map (term_of_ast ~tbl) args in
-      let id  = 
-        match List.assoc_opt p defs with
-        | None -> raise (
-            Error { line = loc.A.line; 
-                    column = loc.A.column; 
-                    msg = "Identity '" ^ p ^ "' used but not defined" })
-        | Some id -> id in
-      Literal.make s col id args
+      let principal  = 
+        match p with
+        | A.PrincipalVar i -> Principal.Var (getvar ~tbl i)
+        | A.PrincipalName n ->
+          match List.assoc_opt n defs with
+          | None -> raise (
+              Error { line = loc.A.line; 
+                      column = loc.A.column; 
+                      msg = "Identity '" ^ n ^ "' used but not defined" })
+          | Some id -> Principal.Id id in
+      Literal.make s col principal args
 
   let clause_of_ast id defs c = match c with
     | A.Clause (a, l) ->
       let tbl = mk_vartbl () in
-      let a = literal_of_ast id defs Cyberlogic.Yellow ~tbl a in
+      let a = literal_of_ast id defs Cyberlogic.Yellow ~tbl (A.Unattested a) in
       let l = List.map (fun x -> let col = Cyberlogic.ColorVar(nextvar ~tbl ()) in 
                          literal_of_ast id defs col ~tbl x) l in
       Clause.make a l
@@ -115,7 +118,7 @@ module Cyberlogic = struct
     let lex = Lexing.from_string s in
     let ac = parse_with_exn Clparser.parse_literal Cllexer.token lex in
     let defs = [] in
-    literal_of_ast id defs col ac
+    literal_of_ast id defs col (A.Unattested ac)
 
   let parse_clause_exn id s =
     let lex = Lexing.from_string s in
@@ -126,7 +129,8 @@ module Cyberlogic = struct
   let parse_file_exn id s =
     let lex = Lexing.from_string s in
     let (defs, ac) = parse_with_exn Clparser.parse_file Cllexer.token lex in
-    List.map (clause_of_ast id defs) ac
+    let principal = Cyberlogic.Principal.Id id in
+    List.map (clause_of_ast principal defs) ac
 
   (* Printing *)
 
@@ -141,12 +145,19 @@ module Cyberlogic = struct
       | Green -> "green"
       | ColorVar i when i >= 0 -> "X" ^ (string_of_int i)
       | ColorVar i -> "Y" ^ (string_of_int (-i)) in
-    let principal_string = match Id.DN.get (Literal.principal literal).subject "CN" with
-      | None -> "<unknown>"
-      | Some n -> n in
+    let principal_string = 
+      match Literal.principal literal with
+      | Principal.Var i -> "<" ^ (string_of_int i) ^ ">"
+      | Principal.Id id ->
+        begin
+          match Id.DN.get id.subject "CN" with
+          | None -> "<unknown>"
+          | Some n -> n 
+        end
+      | Principal.Undefined -> "<undefined>" in
     let claim_string = Datalog.string_of_literal (Literal.plain_literal literal) in
     ansi_color ^
-    principal_string ^ " says " ^ claim_string ^ " [" ^ color_string ^ "]" ^
+    principal_string ^ " attests " ^ claim_string ^ " [" ^ color_string ^ "]" ^
     ansi_default_color
 
   let short_clause clause =
