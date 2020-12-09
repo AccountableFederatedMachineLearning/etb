@@ -1,0 +1,51 @@
+/* Note: To make sure that all consequences are computed automatically,
+   one should make "required" and "forbidden" goals. This can be done
+   with the REST api:
+   http POST localhost:5000/goals/add goal=required
+   http POST localhost:5000/goals/add goal=forbidden
+
+   TODO: Replace the testing ids with actual ids.
+*/
+'aggregator':
+  Subject: 'OU=client+OU=org1+OU=department1,CN=appUser'
+  Issuer: 'C=US,ST=North Carolina,L=Durham,O=org1.example.com,CN=ca.org1.example.com'
+'party0':
+  Subject: 'OU=client+OU=org1+OU=department1,CN=appUser'
+  Issuer: 'C=US,ST=North Carolina,L=Durham,O=org1.example.com,CN=ca.org1.example.com'
+'party1':
+  Subject: 'OU=client+OU=org1+OU=department1,CN=appUser'
+  Issuer: 'C=US,ST=North Carolina,L=Durham,O=org1.example.com,CN=ca.org1.example.com'
+'party2':
+  Subject: 'OU=client+OU=org1+OU=department1,CN=appUser'
+  Issuer: 'C=US,ST=North Carolina,L=Durham,O=org1.example.com,CN=ca.org1.example.com'
+
+/* Verify that all required actions have happened */
+required :- prerequisites,
+            received_messages_were_all_sent.
+
+/* Verify that nothing bad has happened by checking that forbidden is not derivable */
+forbidden :- nonsense.
+
+received_messages_were_all_sent :- 
+    'aggregator' attests received_model_update_hashes(Round, Hashes),
+    all_sent(Hashes).
+
+all_sent(Hashes) :- all_sent_i(Hashes, 0).
+all_sent_i(Hashes, I) :- length(Hashes, N), I >= N.
+all_sent_i(Hashes, I) :- array_get(Hashes, I, H),
+                         Party attests sent_model_update(H),
+                         add(I, 1, J),
+                         all_sent_i(Hashes, J).
+
+nonsense :- 'aggregator' attests received_model_update_hashes(Round, Hashes1),
+            'aggregator' attests received_model_update_hashes(Round, Hashes2),
+            Hashes1 != Hashes2.
+
+prerequisites.
+
+/* Some examples for testing (notice that in the test config all identities are the local identity): */
+configuration('{"data": {"cls_ref": <class "CivitasKerasDataHandler.CivitasKerasDataHandler">, "info": {"npz_file": "examples/data/civitas/random/data_party0.npz"}}, "model": {"cls_ref": <class "ibmfl.model.keras_fl_model.KerasFLModel">, "spec": {"model_definition": "examples/configs/civitas_classifier/compiled_civitas_keras.h5", "model_name": "keras-cnn"}}, "fusion": {}, "connection": {"cls_ref": <class "ibmfl.connection.flask_connection.FlaskConnection">, "info": {"ip": "127.0.0.1", "port": 8085, "tls_config": {"enable": False}}, "sync": False}, "protocol_handler": {"cls_ref": <class "ibmfl.party.party_protocol_handler.PartyProtocolHandler">}, "hyperparams": None, "aggregator": {"ip": "127.0.0.1", "port": 5000}, "local_training": {"cls_ref": <class "ibmfl.party.training.local_training_handler.LocalTrainingHandler">}, "evidencia": {"cls_ref": <class "ibmfl.evidencia.hyperledger_recorder.HyperledgerEvidenceRecorder">, "info": {"url": "http://localhost:5001/facts/add"}}}').
+received_model_update_hashes(1, '["1b05862adc80c802f37621ebac799ebcd76d7647ff26a5cd15343c25f025f262", "45162f3297daea6c3772a95640170c9f99dbb6e4b774e0702f5c84d9ca545a3a", "1d0eb0436f12d0b769ce90077c60bf40a791d8e97d0c4ad891c558ea166a3ba5"]').
+sent_model_update('"1b05862adc80c802f37621ebac799ebcd76d7647ff26a5cd15343c25f025f262"').
+sent_model_update('"45162f3297daea6c3772a95640170c9f99dbb6e4b774e0702f5c84d9ca545a3a"').
+sent_model_update('"1d0eb0436f12d0b769ce90077c60bf40a791d8e97d0c4ad891c558ea166a3ba5"').
