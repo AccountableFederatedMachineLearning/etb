@@ -45,6 +45,7 @@ let json_handler t : Cyberlogic.goal_handler =
        String.get s (String.length s - 1) = '\''
     then String.sub s 1 (String.length s - 2) 
     else s in
+  let quote s = "'" ^ s ^ "'" in
   let int_of_symbol_exn s = int_of_string (Default.StringSymbol.to_string s) in
   let json_of_const_exn c = match c with
     | Const s -> Js.Json.parseExn (no_quotes_exn (StringSymbol.to_string s))
@@ -80,6 +81,7 @@ let json_handler t : Cyberlogic.goal_handler =
             let i = int_of_symbol_exn index in
             let value_const = Array.get array i
                               |> Js.Json.stringify
+                              |> quote
                               |> Default.StringSymbol.make
                               |> Default.mk_const in
             let x = Cyberlogic.Literal.make h Cyberlogic.Yellow t.id 
@@ -97,6 +99,7 @@ let json_handler t : Cyberlogic.goal_handler =
             let value_const = Js_dict.get obj field 
                               |> Belt.Option.getExn 
                               |> Js.Json.stringify
+                              |> quote
                               |> Default.StringSymbol.make
                               |> Default.mk_const in
             let x = Cyberlogic.Literal.make h Cyberlogic.Yellow t.id 
@@ -117,7 +120,7 @@ let int_handler t : Cyberlogic.goal_handler =
     try
       match Default.StringSymbol.to_string h, a with
       | "le", [Const i; Const j] -> 
-        if int_of_symbol i < int_of_symbol j then
+        if int_of_symbol i <= int_of_symbol j then
           Cyberlogic.db_add_fact t.db (Cyberlogic.Literal.make h Cyberlogic.Yellow t.id a)
       | "lt", [Const i; Const j] -> 
         if int_of_symbol i < int_of_symbol j then
@@ -126,7 +129,7 @@ let int_handler t : Cyberlogic.goal_handler =
         if int_of_symbol i > int_of_symbol j then
           Cyberlogic.db_add_fact t.db (Cyberlogic.Literal.make h Cyberlogic.Yellow t.id a)
       | "ge", [Const i; Const j] -> 
-        if int_of_symbol i > int_of_symbol j then
+        if int_of_symbol i >= int_of_symbol j then
           Cyberlogic.db_add_fact t.db (Cyberlogic.Literal.make h Cyberlogic.Yellow t.id a)
       | "add", [Const i as i_const; Const j as j_const; _] ->         
         Cyberlogic.db_add_fact t.db 
