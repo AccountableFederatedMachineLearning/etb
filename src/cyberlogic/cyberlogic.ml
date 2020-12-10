@@ -73,7 +73,10 @@ module Literal = struct
   type t_json = {
     color : string;
     principal : Principal.t_json;
-    literal : string
+    literal : literal_json
+  } and literal_json = {
+    symbol : string;
+    arguments : string Js.Array.t 
   }
 
   let make s color principal args =
@@ -108,10 +111,15 @@ module Literal = struct
         | ColorVar i -> "X" ^ (string_of_int i)
       end;
     principal = Principal.to_json (principal literal);
-    literal =      
+    literal =
       let p = plain_literal literal in
-      Default.pp_literal Format.str_formatter p;
-      Format.flush_str_formatter ()
+      let (sym, args) = Default.open_literal p in
+      { symbol = StringSymbol.to_string sym;
+        arguments = Array.of_list (List.map (fun arg ->
+            Default.pp_term Format.str_formatter arg;
+            Format.flush_str_formatter ()
+          ) args)
+      }
   }
 
 end

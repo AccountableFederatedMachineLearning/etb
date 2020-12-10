@@ -25,7 +25,10 @@ module Literal : sig
   type t_json = {
     color : string;
     principal : Principal.t_json;
-    literal : string
+    literal : literal_json
+  } and literal_json = {
+    symbol : string;
+    arguments : string Js.Array.t 
   }
 
   val make : Default.symbol -> color -> Principal.t -> Default.term list -> t

@@ -30,7 +30,10 @@ let log_yellow_facts t : Cyberlogic.fact_handler =
     let rec log_action () = 
       match t.contract with
       | Some contract ->
-        Fabric.add_claim contract Cyberlogic.Literal.((to_json fact).literal) 
+        let plain_literal = Cyberlogic.Literal.plain_literal fact in
+        Default.pp_literal Format.str_formatter plain_literal;
+        let literal_string = Format.flush_str_formatter () in
+        Fabric.add_claim contract literal_string
       | None -> 
         (* If no contract is installed, log the action again for later execution *)
         run_later t log_action;

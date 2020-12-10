@@ -36,6 +36,9 @@
 
   <h1>Node status</h1>
 
+
+  Number of rounds: <span id="rounds"></span>
+
   <!--
   <p id="b(200, 4)">If this text has yellow background, then the claim b(200, 4)
     has been proved locally. If the text has a green border, then it is
@@ -57,13 +60,17 @@
   <script>
     var socket = io();
     socket.on('fact', function (msg) {
-      let id = msg.literal;
+      console.log(msg);
+      let id = JSON.stringify(msg.literal);
       if (document.getElementById(id) === null) {
         $('#facts')
           .append($('<li>')
             .append($(`<div>`)
               .attr("id", id)
-              .text(getFirstCN(msg.principal.subject) + " attests " + msg.literal)));
+              .text(getFirstCN(msg.principal.subject) + " attests " + JSON.stringify(msg.literal))));
+      }
+      if (msg.literal.symbol === "rounds") {
+        $(document.getElementById("rounds")).text(msg.literal.arguments);
       }
       $(document.getElementById(id)).addClass(msg.color);
     });
