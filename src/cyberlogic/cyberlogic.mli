@@ -49,6 +49,11 @@ module Clause : sig
 
 end
 
+type program = {
+  clauses : Clause.t list;
+  goals : Literal.t list
+}
+
 (* Expose interface of bottom-up *)
 type db
 

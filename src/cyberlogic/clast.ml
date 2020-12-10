@@ -7,7 +7,11 @@ type location = {
 }
 
 (** {1 Parsing AST} *)
-type file = abbrev list * clause list
+type file = {
+  identities : abbrev list;
+  clauses : clause list;
+  goals : literal list;
+}
 and abbrev = string * Id.t
 and clause =
   | Clause of literal * attested_literal list

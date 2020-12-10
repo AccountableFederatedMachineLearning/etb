@@ -25,7 +25,7 @@ module Cyberlogic : sig
 
   val parse_clause_exn : Cyberlogic.Principal.t -> string -> Cyberlogic.Clause.t
 
-  val parse_file_exn : Id.t -> string -> Cyberlogic.Clause.t list
+  val parse_file_exn : Id.t -> string -> Cyberlogic.program
 
   val short_literal : Cyberlogic.Literal.t -> string
 

@@ -205,7 +205,7 @@ let claim_event_listener t (payload: string): unit Js.Promise.t =
   end;
   flush_pending t
 
-let create id clauses = 
+let create id prg = 
   let t = { 
     db = Cyberlogic.db_create ();
     id = Cyberlogic.Principal.Id id;
@@ -216,9 +216,13 @@ let create id clauses =
   Cyberlogic.db_subscribe_goal t.db (json_handler t);
   Cyberlogic.db_subscribe_goal t.db (int_handler t);
   Cyberlogic.db_subscribe_goal t.db (general_handler t);
-  clauses |> List.iter (fun clause ->
+  prg.Cyberlogic.clauses |> List.iter (fun clause ->
       Logger.debug (Syntax.Cyberlogic.short_clause clause);
       Cyberlogic.db_add t.db clause
+    );
+  prg.Cyberlogic.goals |> List.iter (fun goal ->
+      Logger.debug ("Adding goal : " ^ (Syntax.Cyberlogic.short_literal goal));
+      Cyberlogic.db_goal t.db goal
     );
   t
 

@@ -35,6 +35,7 @@ rule token =
                                        token lexbuf } (* skip new lines *)
       | "not"                        { NOT }
       | "attests"                    { ATTESTS }
+      | "goal"                       { GOAL }
       | one_line_comment             { token lexbuf } (* skip comment *)
       | multi_line_comment           { token lexbuf } (* skip comment *)
       | multi_line_comment_unclosed  { lexing_error "Unclosed Comment" lexbuf }

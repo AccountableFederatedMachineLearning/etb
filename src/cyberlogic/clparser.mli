@@ -8,6 +8,7 @@ type token =
   | NOT
   | COMMA
   | ATTESTS
+  | GOAL
   | LT
   | LE
   | GT

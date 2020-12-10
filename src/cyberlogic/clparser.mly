@@ -24,7 +24,7 @@ this file is part of datalog. See README for the license
 %token IF
 %token NOT
 %token COMMA
-%token ATTESTS
+%token ATTESTS GOAL
 %token LT LE GT GE EQ NE
 %token EQUALS
 %token COLON
@@ -54,7 +54,8 @@ this file is part of datalog. See README for the license
 %%
 
 parse_file:
-  | abbrevs clauses EOI { ($1, $2) }
+  | abbrevs clauses goals EOI 
+    { { identities = $1; clauses = $2; goals = $3 }  }
 
 parse_literal:
   | literal EOI { $1 }
@@ -81,12 +82,19 @@ abbrev:
      }
 
 clauses:
-  | clause { [$1] }
+  |    { [] }
   | clause clauses { $1 :: $2 }
 
 clause:
   | literal DOT { Clast.Clause ($1, []) }
   | literal IF attested_literals DOT { Clast.Clause ($1, $3) }
+
+goals:
+  |   { [] }  
+  | goal goals { $1 :: $2 }
+
+goal:
+  | GOAL literal DOT { $2 }  
 
 attested_literals:
   | attested_literal { [$1] }

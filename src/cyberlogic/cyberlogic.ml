@@ -136,6 +136,11 @@ module Clause = struct
 
 end
 
+type program = {
+  clauses : Clause.t list;
+  goals : Literal.t list
+}
+
 (* Database *)
 type db = Default.db
 

@@ -128,9 +128,15 @@ module Cyberlogic = struct
 
   let parse_file_exn id s =
     let lex = Lexing.from_string s in
-    let (defs, ac) = parse_with_exn Clparser.parse_file Cllexer.token lex in
+    let prg = parse_with_exn Clparser.parse_file Cllexer.token lex in
     let principal = Cyberlogic.Principal.Id id in
-    List.map (clause_of_ast principal defs) ac
+    { clauses =
+        List.map (clause_of_ast principal prg.identities) prg.clauses;
+      goals =
+        List.map (fun l -> 
+            literal_of_ast principal prg.identities Yellow (Unattested l)) 
+          prg.goals
+    }
 
   (* Printing *)
 
