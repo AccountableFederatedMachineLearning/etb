@@ -21,6 +21,13 @@ required :- prerequisites,
 /* Verify that nothing bad has happened by checking that forbidden is not derivable */
 forbidden :- nonsense.
 
+/* Configuration data */
+
+rounds(N) :- 'aggregator' attests configuration(C),
+            object_get(C, 'hyperparams', HyperParams),
+            object_get(HyperParams, 'global', Global),
+            object_get(Global, 'rounds', N).
+
 received_messages_were_all_sent :- 
     'aggregator' attests received_model_update_hashes(Round, Hashes),
     all_sent(Hashes).
@@ -39,7 +46,10 @@ nonsense :- 'aggregator' attests received_model_update_hashes(Round, Hashes1),
 prerequisites.
 
 /* Some examples for testing (notice that in the test config all identities are the local identity): */
+/* TODO: Das Original war  kein valides JSON! 
 configuration('{"data": {"cls_ref": <class "CivitasKerasDataHandler.CivitasKerasDataHandler">, "info": {"npz_file": "examples/data/civitas/random/data_party0.npz"}}, "model": {"cls_ref": <class "ibmfl.model.keras_fl_model.KerasFLModel">, "spec": {"model_definition": "examples/configs/civitas_classifier/compiled_civitas_keras.h5", "model_name": "keras-cnn"}}, "fusion": {}, "connection": {"cls_ref": <class "ibmfl.connection.flask_connection.FlaskConnection">, "info": {"ip": "127.0.0.1", "port": 8085, "tls_config": {"enable": False}}, "sync": False}, "protocol_handler": {"cls_ref": <class "ibmfl.party.party_protocol_handler.PartyProtocolHandler">}, "hyperparams": None, "aggregator": {"ip": "127.0.0.1", "port": 5000}, "local_training": {"cls_ref": <class "ibmfl.party.training.local_training_handler.LocalTrainingHandler">}, "evidencia": {"cls_ref": <class "ibmfl.evidencia.hyperledger_recorder.HyperledgerEvidenceRecorder">, "info": {"url": "http://localhost:5001/facts/add"}}}').
+*/
+configuration('{"data": {"cls_ref": "CivitasKerasDataHandler.CivitasKerasDataHandler", "info": {"npz_file": "examples/data/civitas/random/data_party0.npz"}}, "model": {"cls_ref": "ibmfl.model.keras_fl_model.KerasFLModel", "spec": {"model_definition": "examples/configs/civitas_classifier/compiled_civitas_keras.h5", "model_name": "keras-cnn"}}, "fusion": {}, "connection": {"cls_ref": "ibmfl.connection.flask_connection.FlaskConnection", "info": {"ip": "127.0.0.1", "port": 8085, "tls_config": {"enable": "False"}}, "sync": "False"}, "protocol_handler": {"cls_ref": "ibmfl.party.party_protocol_handler.PartyProtocolHandler"}, "hyperparams": {"global": {"max_timeout": 600, "parties": 3, "rounds": 3, "termination_accuracy": 0.9}, "local": {"optimizer": {"lr": 0.01}, "training": {"epochs": 3}}}, "aggregator": {"ip": "127.0.0.1", "port": 5000}, "local_training": {"cls_ref": "ibmfl.party.training.local_training_handler.LocalTrainingHandler"}, "evidencia": {"cls_ref": "ibmfl.evidencia.hyperledger_recorder.HyperledgerEvidenceRecorder", "info": {"url": "http://localhost:5001/facts/add"}}}').
 received_model_update_hashes(1, '["1b05862adc80c802f37621ebac799ebcd76d7647ff26a5cd15343c25f025f262", "45162f3297daea6c3772a95640170c9f99dbb6e4b774e0702f5c84d9ca545a3a", "1d0eb0436f12d0b769ce90077c60bf40a791d8e97d0c4ad891c558ea166a3ba5"]').
 sent_model_update('"1b05862adc80c802f37621ebac799ebcd76d7647ff26a5cd15343c25f025f262"').
 sent_model_update('"45162f3297daea6c3772a95640170c9f99dbb6e4b774e0702f5c84d9ca545a3a"').
@@ -47,3 +57,4 @@ sent_model_update('"1d0eb0436f12d0b769ce90077c60bf40a791d8e97d0c4ad891c558ea166a
 
 goal required.
 goal forbidden.
+goal rounds(X).
