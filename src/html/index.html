@@ -70,8 +70,8 @@
               .attr("id", id)
               .text(getFirstCN(msg.principal.subject) + " attests " + JSON.stringify(msg.literal))));
       }
-      if (msg.literal.symbol === "rounds") {
-        $(document.getElementById("rounds")).text(msg.literal.arguments);
+      if (document.getElementById(msg.literal.symbol) !== null) {
+        $(document.getElementById(msg.literal.symbol)).text(msg.literal.arguments);
       }
       $(document.getElementById(id)).addClass(msg.color);
     });
