@@ -1,80 +1,42 @@
 <!doctype html>
-<html>
+<html lang="en">
 
 <head>
-  <title>Report</title>
+  <meta charset="UTF-8" />
+  <title>Hello World</title>
+
   <style>
     body {
       margin: 40px auto;
-      max-width: 650px;
+      max-width: 60em;
       line-height: 1.6;
       padding: 0 10px;
     }
 
-    h1,
-    h2,
-    h3 {
-      line-height: 1.2
-    }
-
-    .yellow {
-      background: yellow;
+    .fact {
+      display: inline-block;
+      padding: 2pt;
     }
 
     .green {
-      border: solid green;
+      border: solid 2px green;
     }
 
-    #facts {
-      font-family: monospace;
-      display: inline-block;
-      word-break: break-all;
+    .yellow {
+      background-color: yellow;
     }
   </style>
-</head>
 
-<body>
-
-  <h1>Node status</h1>
-
-
-  Number of rounds: <span id="rounds"></span>
-
-  <!--
-  <p id="b(200, 4)">If this text has yellow background, then the claim b(200, 4)
-    has been proved locally. If the text has a green border, then it is
-    logged on the ledger.
-  </p>
-  -->
-
-  <h2>Unsorted facts</h2>
-
-  <p>
-    Facts with yellow background have been established tentatively.
-    Facts with a green border agree with what is recorded on the ledger.
-  </p>
-
-  <ul id="facts"> </ul>
-
+  <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
   <script src="/socket.io/socket.io.js"></script>
-  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-  <script>
-    var socket = io();
-    socket.on('fact', function (msg) {
-      console.log(msg);
-      let id = JSON.stringify(msg.literal);
-      if (document.getElementById(id) === null) {
-        $('#facts')
-          .append($('<li>')
-            .append($(`<div>`)
-              .attr("id", id)
-              .text(getFirstCN(msg.principal.subject) + " attests " + JSON.stringify(msg.literal))));
-      }
-      if (document.getElementById(msg.literal.symbol) !== null) {
-        $(document.getElementById(msg.literal.symbol)).text(msg.literal.arguments);
-      }
-      $(document.getElementById(id)).addClass(msg.color);
-    });
+
+  <!-- Don't use this in production: -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- These are a few simple react components for writing factsheets.
+       See the body for examples of how to use them. -->
+  <script type="text/babel">
 
     function getFirstCN(dn) {
       for (let i of dn) {
@@ -84,7 +46,211 @@
       }
       return "?";
     }
+
+    function FormattedFact(props) {
+      var format = props.format;
+      let args = props.args;
+      let text =
+        format.length === 1
+          ? format(props.args)
+          : format.length === 3
+            ? format(props.principal, props.symbol, props.args)
+            : format;
+      return <>{text}</>;
+    }
+
+    function FactInstancesOfPrincipal(props) {
+      let argColors = props.argColors;
+      if (argColors === undefined) {
+        return <>{props.default !== undefined ? props.default : "n/a"}</>;
+      }
+      let allargs = Object.keys(argColors).map(JSON.parse);
+      let styleClasses = colorSet => "fact " + Array.from(colorSet).join(" ");
+
+      return (<>
+        {allargs.map((args, i) => {
+          let reason = `${props.principal} attests ${props.symbol}(${args.join(", ")})`;
+          let colors = argColors[JSON.stringify(args)];
+          return <span key={args}> {i > 0 && " "}
+            <span title={reason}
+              className={styleClasses(colors)}>
+              <FormattedFact
+                format={props.format}
+                principal={props.principal}
+                symbol={props.symbol}
+                args={args}
+              />
+            </span>
+          </span>;
+        })}
+      </>);
+    }
+
+    function FactInstances(props) {
+      let db = props.db;
+      let symbol = props.symbol;
+      if (db[symbol] === undefined) {
+        return <span>
+          {props.default !== undefined
+            ? props.default
+            : "n/a"}
+        </span>;
+      }
+      let principals = Object.keys(db[symbol]).filter(p =>
+        props.principal === undefined || p === props.principal);
+      return <>
+        {principals.map(p =>
+          <FactInstancesOfPrincipal key={p}
+            format={props.format}
+            default={props.default}
+            principal={p}
+            symbol={symbol}
+            argColors={db[symbol][p]}
+          />)
+        }
+      </>;
+    }
+
+    class FactDB extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {};
+      }
+
+      componentDidMount() {
+        var socket = io();
+        var factsheet = this;
+        socket.on('fact', function (msg) {
+          console.log(msg);
+          let facts = factsheet.state;
+          let cn = getFirstCN(msg.principal.subject);
+          let symbolEntry = facts[msg.literal.symbol] || {};
+          let principalEntry = symbolEntry[cn] || {};
+          let args = JSON.stringify(msg.literal.arguments);
+          let argsEntry = principalEntry[args] || new Set();
+          argsEntry.add(msg.color);
+          principalEntry[args] = argsEntry;
+          symbolEntry[cn] = principalEntry;
+          facts[msg.literal.symbol] = symbolEntry;
+          factsheet.setState(facts);
+        });
+      }
+
+      render() {
+        return <></>
+      }
+    }
+
   </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+
+    // Component that displays a list of all facts
+    function AllFacts(props) {
+      if (props.db === undefined) {
+        return null;
+      }
+      return (
+        <ul>{
+          Object.keys(props.db).map(symbol =>
+            <li key={symbol} style={{ fontFamily: "monospace" }}>
+              {symbol}:
+              <br />
+              <FactInstances db={props.db} symbol={symbol}
+                format={(principal, symbol, args) =>
+                  <>{principal} attests {symbol}({args.join(", ")})</>
+                } />
+            </li>)}
+        </ul>);
+    }
+
+    class Factsheet extends FactDB {
+      render() {
+        return (
+          <>
+            <h1>Simple Factsheet</h1>
+
+            <h2>Summary</h2>
+
+            <p>
+              All the required steps
+              were
+              <FactInstances db={this.state}
+                symbol="required"
+                format="completed successfully" />.
+            </p>
+            <ul>
+              <li>
+                <FactInstances db={this.state}
+                  symbol="received_messages_were_all_sent"
+                  format="All model-updates received by the aggregator were sent by a party." />
+              </li>
+              <li>
+                TODO: More here, e.g. Each model update sent by a party was received by the aggregator.
+              </li>
+            </ul>
+
+            <p>
+              <FactInstances db={this.state}
+                symbol="forbidden"
+                format={<strong style={{ color: "red" }}>Problems found!</strong>}
+                default="No Problems were found." />
+            </p>
+
+            <h2>Configuration</h2>
+
+            <p>
+              The training process used
+              <FactInstances db={this.state} symbol="rounds" format={args => args[0]} /> rounds.
+            </p>
+
+            <p> The most important configuration options are: </p>
+            <ul>
+              <li>
+                Number of rounds:
+                <FactInstances db={this.state} symbol="rounds" format={args => args[0]} />
+              </li>
+              <li>
+                TODO: More here
+              </li>
+            </ul>
+
+            <p>
+              The complete raw configuration data is:
+              <span style={{ fontFamily: "monospace" }}>
+                <FactInstances db={this.state} symbol="configuration" format={args => args[0]} />
+              </span>
+            </p>
+
+            <h2>Everything</h2>
+            <AllFacts db={this.state} />
+          </>
+        );
+      }
+    }
+
+    ReactDOM.render(
+      <Factsheet />,
+      document.getElementById('root')
+    );
+
+  </script>
+  <!--
+      Note: this page is a great way to try React but it's not suitable for production.
+      It slowly compiles JSX with Babel in the browser and uses a large development build of React.
+
+      Read this section for a production-ready setup with JSX:
+      https://reactjs.org/docs/add-react-to-a-website.html#add-jsx-to-a-project
+
+      In a larger project, you can use an integrated toolchain that includes JSX instead:
+      https://reactjs.org/docs/create-a-new-react-app.html
+
+      You can also use React without JSX, in which case you can remove Babel:
+      https://reactjs.org/docs/react-without-jsx.html
+    -->
 </body>
 
 </html>
