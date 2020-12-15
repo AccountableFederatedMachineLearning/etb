@@ -15,15 +15,15 @@
 
     .fact {
       display: inline-block;
-      padding: 2pt;
+      padding: 0pt;
     }
 
     .green {
-      border: solid 2px green;
+      text-decoration: underline green;
     }
 
     .yellow {
-      background-color: yellow;
+      background-color: lightyellow;
     }
   </style>
 
@@ -90,7 +90,7 @@
       let db = props.db;
       let symbol = props.symbol;
       if (db[symbol] === undefined) {
-        return <span>
+        return <span>{" "}
           {props.default !== undefined
             ? props.default
             : "n/a"}
@@ -167,11 +167,32 @@
         </ul>);
     }
 
+    function Problems(props) {
+      if (props.db === undefined) {
+        return null;
+      }
+      return (<>
+        <h2 style={{ color: "red" }}>Problems found</h2>
+        <ul>
+          <FactInstances db={props.db}
+            symbol="message_not_received"
+            format={<li>"Some model updates were sent but not received:"
+                <FactInstances db={props.db}
+                symbol="not_received"
+                format={args => args[0]}
+              />
+            </li>}
+          />
+        </ul>
+      </>
+      );
+    }
+
     class Factsheet extends FactDB {
       render() {
         return (
           <>
-            <h1>Simple Factsheet</h1>
+            <h1>Node Status</h1>
 
             <h2>Summary</h2>
 
@@ -180,13 +201,15 @@
               were
               <FactInstances db={this.state}
                 symbol="required"
-                format="completed successfully" />.
+                format="completed successfully"
+                default="not completed" />.
             </p>
             <ul>
               <li>
                 <FactInstances db={this.state}
                   symbol="received_messages_were_all_sent"
-                  format="All model-updates received by the aggregator were sent by a party." />
+                  format="All model-updates received by the aggregator were sent by a party."
+                  default="Not all model-updates received by the aggregator were sent by a party." />
               </li>
               <li>
                 TODO: More here, e.g. Each model update sent by a party was received by the aggregator.
@@ -196,7 +219,7 @@
             <p>
               <FactInstances db={this.state}
                 symbol="forbidden"
-                format={<strong style={{ color: "red" }}>Problems found!</strong>}
+                format={<Problems db={this.state} />}
                 default="No Problems were found." />
             </p>
 
@@ -207,14 +230,23 @@
               <FactInstances db={this.state} symbol="rounds" format={args => args[0]} /> rounds.
             </p>
 
-            <p> The most important configuration options are: </p>
+            <p> Global options: </p>
             <ul>
               <li>
                 Number of rounds:
                 <FactInstances db={this.state} symbol="rounds" format={args => args[0]} />
               </li>
               <li>
-                TODO: More here
+                Number of parties:
+                <FactInstances db={this.state} symbol="parties" format={args => args[0]} />
+              </li>
+              <li>
+                Maximum timeout:
+                <FactInstances db={this.state} symbol="max_timeout" format={args => args[0]} />
+              </li>
+              <li>
+                Termination accuracy:
+                <FactInstances db={this.state} symbol="termination_accuracy" format={args => args[0]} />
               </li>
             </ul>
 
