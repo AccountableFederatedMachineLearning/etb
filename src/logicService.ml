@@ -112,6 +112,10 @@ let json_handler t : Cyberlogic.goal_handler =
             _ -> ()
           (* if anything fails, add nothing *)
         end
+      | "int_of_string", [Const s as s_const; _] ->         
+        Cyberlogic.db_add_fact t.db 
+          (Cyberlogic.Literal.make h Cyberlogic.Yellow t.id 
+             [s_const; Default.mk_const (StringSymbol.make (no_quotes_exn (StringSymbol.to_string s)))])
       | _ -> ()
     end     
 
@@ -138,6 +142,10 @@ let int_handler t : Cyberlogic.goal_handler =
         Cyberlogic.db_add_fact t.db 
           (Cyberlogic.Literal.make h Cyberlogic.Yellow t.id 
              [i_const; j_const; const_of_int (int_of_symbol i + int_of_symbol j)])
+      | "sub", [Const i as i_const; Const j as j_const; _] ->         
+        Cyberlogic.db_add_fact t.db 
+          (Cyberlogic.Literal.make h Cyberlogic.Yellow t.id 
+             [i_const; j_const; const_of_int (int_of_symbol i - int_of_symbol j)])
       | "mul", [Const i as i_const; Const j as j_const; _] ->         
         Cyberlogic.db_add_fact t.db 
           (Cyberlogic.Literal.make h Cyberlogic.Yellow t.id 
