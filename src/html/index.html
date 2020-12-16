@@ -13,10 +13,14 @@
       padding: 0 10px;
     }
 
-    .fact {}
+    .fact {
+      display: inline-block;
+      padding-left: 3pt;
+      padding-right: 3pt;
+    }
 
     .green {
-      text-decoration: underline green;
+      border: solid 2px green;
     }
 
     .yellow {
@@ -85,7 +89,7 @@
           let reason = `${props.principal} attests ${props.symbol}(${args.join(", ")})`;
           let colors = argColors[JSON.stringify(args)];
           return <span key={args}> {i > 0 && " "}
-            <span title={reason}
+            <div title={reason}
               className={styleClasses(colors)}>
               <FormattedFact
                 format={props.format}
@@ -93,7 +97,7 @@
                 symbol={props.symbol}
                 args={args}
               />
-            </span>
+            </div>
           </span>;
         })}
       </>);
@@ -205,17 +209,15 @@
       render() {
         return (
           <>
-            <h1>Node Status</h1>
+            <h1>Facts</h1>
 
             <h2>Summary</h2>
 
             <p>
-              All the required steps
-              were
               <FactInstances db={this.state}
                 symbol="required"
-                format="completed successfully"
-                default="not completed" />.
+                format="All the required steps were completed successfully"
+                default="Not all the required steps were completed sucessfully" />.
             </p>
             <ul>
               <li>
@@ -225,7 +227,7 @@
                   default="Not all model-updates received by the aggregator were sent by a party." />
               </li>
               <li>
-                TODO: More here, e.g. Each model update sent by a party was received by the aggregator.
+                TODO: more here
               </li>
             </ul>
 
@@ -233,9 +235,16 @@
               <FactInstances db={this.state}
                 symbol="forbidden"
                 format={<Problems db={this.state} />}
-                default="No Problems were found." />
+                default={<></>} />
             </p>
 
+            <h2>Participants</h2>
+
+            <p>
+              The following parties have participated in the learning process:
+                <FactInstances db={this.state} symbol="configuration"
+                format={(principal, symbol, args) => <>{principal}</>} />
+            </p>
 
             <h2>Configuration</h2>
 
@@ -245,7 +254,7 @@
             </p>
 
             <p>
-              The termination accuracy was
+              The termination accuracy was set to
               <FactInstances db={this.state} symbol="termination_accuracy" format={args => args[0]} />{" "}
                 and the
                 timeout was set to <FactInstances db={this.state} symbol="max_timeout" format={args => args[0]} />.
@@ -253,27 +262,18 @@
 
             <p>
               <FactInstances db={this.state} symbol="configuration"
+                principal="aggregator"
                 format={(principal, symbol, args) => {
                   let config = jsonOfConstant(args[0]);
                   if (config.fusion.cls_ref === undefined) {
                     return null;
                   } else {
                     return <>
-                      Participants {principal} uses the fusion algorithm <tt>{config.fusion.cls_ref}.</tt>
+                      The {principal} uses the fusion algorithm <tt>{config.fusion.cls_ref}.</tt>
                     </>
                   }
                 }
                 } />
-            </p>
-
-            <h2>Participants</h2>
-
-            <p>
-              The following parties have submitted configuration information:
-              <ul>
-                <FactInstances db={this.state} symbol="configuration"
-                  format={(principal, symbol, args) => <li>{principal}</li>} />
-              </ul>
             </p>
 
 
@@ -294,7 +294,7 @@
               }
               } />
 
-            <h2>All facts</h2>
+            <h2>Everything</h2>
             <AllFacts db={this.state} />
           </>
         );
