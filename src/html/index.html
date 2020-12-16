@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>Hello World</title>
+  <title>Factsheet</title>
 
   <style>
     body {
@@ -13,10 +13,7 @@
       padding: 0 10px;
     }
 
-    .fact {
-      display: inline-block;
-      padding: 0pt;
-    }
+    .fact {}
 
     .green {
       text-decoration: underline green;
@@ -47,16 +44,32 @@
       return "?";
     }
 
+    function jsonOfConstant(s) {
+      if (s[0] === '\'' && s[s.length - 1] === '\'') {
+        s = s.substring(1, s.length - 1);
+      }
+      try {
+        return JSON.parse(s);
+      }
+      catch (e) {
+        return null
+      }
+    }
+
     function FormattedFact(props) {
       var format = props.format;
       let args = props.args;
-      let text =
-        format.length === 1
-          ? format(props.args)
-          : format.length === 3
-            ? format(props.principal, props.symbol, props.args)
-            : format;
-      return <>{text}</>;
+      try {
+        let text =
+          format.length === 1
+            ? format(props.args)
+            : format.length === 3
+              ? format(props.principal, props.symbol, props.args)
+              : format;
+        return <>{text}</>;
+      } catch (e) {
+        return <>{"formatting error: " + e}</>
+      }
     }
 
     function FactInstancesOfPrincipal(props) {
@@ -223,41 +236,65 @@
                 default="No Problems were found." />
             </p>
 
+
             <h2>Configuration</h2>
 
             <p>
-              The training process used
-              <FactInstances db={this.state} symbol="rounds" format={args => args[0]} /> rounds.
+              The training process is configured to use <FactInstances db={this.state} symbol="rounds" format={args => args[0]} /> rounds
+                and <FactInstances db={this.state} symbol="parties" format={args => args[0]} /> parties.
             </p>
-
-            <p> Global options: </p>
-            <ul>
-              <li>
-                Number of rounds:
-                <FactInstances db={this.state} symbol="rounds" format={args => args[0]} />
-              </li>
-              <li>
-                Number of parties:
-                <FactInstances db={this.state} symbol="parties" format={args => args[0]} />
-              </li>
-              <li>
-                Maximum timeout:
-                <FactInstances db={this.state} symbol="max_timeout" format={args => args[0]} />
-              </li>
-              <li>
-                Termination accuracy:
-                <FactInstances db={this.state} symbol="termination_accuracy" format={args => args[0]} />
-              </li>
-            </ul>
 
             <p>
-              The complete raw configuration data is:
-              <span style={{ fontFamily: "monospace" }}>
-                <FactInstances db={this.state} symbol="configuration" format={args => args[0]} />
-              </span>
+              The termination accuracy was
+              <FactInstances db={this.state} symbol="termination_accuracy" format={args => args[0]} />{" "}
+                and the
+                timeout was set to <FactInstances db={this.state} symbol="max_timeout" format={args => args[0]} />.
+                  </p>
+
+            <p>
+              <FactInstances db={this.state} symbol="configuration"
+                format={(principal, symbol, args) => {
+                  let config = jsonOfConstant(args[0]);
+                  if (config.fusion.cls_ref === undefined) {
+                    return null;
+                  } else {
+                    return <>
+                      Participants {principal} uses the fusion algorithm <tt>{config.fusion.cls_ref}.</tt>
+                    </>
+                  }
+                }
+                } />
             </p>
 
-            <h2>Everything</h2>
+            <h2>Participants</h2>
+
+            <p>
+              The following parties have submitted configuration information:
+              <ul>
+                <FactInstances db={this.state} symbol="configuration"
+                  format={(principal, symbol, args) => <li>{principal}</li>} />
+              </ul>
+            </p>
+
+
+            <h2>Model Information</h2>
+
+            <FactInstances db={this.state} symbol="configuration"
+              format={(principal, symbol, args) => {
+                let config = jsonOfConstant(args[0]);
+                return <>
+                  <h3>Model details of {principal}</h3>
+
+                  <ul>
+                    <li> Model name: <tt>{config.model.spec.model_name}</tt> </li>
+                    <li> Model definition: <tt>{config.model.spec.model_definition}</tt> </li>
+                    <li> Class reference: <tt>{config.model.cls_ref}</tt> </li>
+                  </ul>
+                </>
+              }
+              } />
+
+            <h2>All facts</h2>
             <AllFacts db={this.state} />
           </>
         );

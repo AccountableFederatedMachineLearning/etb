@@ -57,12 +57,14 @@ let json_handler t : Cyberlogic.goal_handler =
     Belt.Option.getExn (Js.Json.decodeArray (json_of_const_exn c)) in
   let object_of_const_exn c = 
     Belt.Option.getExn (Js.Json.decodeObject (json_of_const_exn c)) in
+  let string_of_const_exn c = 
+    Belt.Option.getExn (Js.Json.decodeString (json_of_const_exn c)) in
   fun (goal : Cyberlogic.Literal.t) ->
     let h, a = Default.open_literal (Cyberlogic.Literal.plain_literal goal) in
     Logger.debug("goal '" ^ (Syntax.Cyberlogic.short_literal goal) ^ "'");
     begin
       match Default.StringSymbol.to_string h, a with
-      | "length", [(Const _) as array_const; _] -> 
+      | "json_array_length", [(Const _) as array_const; _] -> 
         begin
           try
             let array = array_of_const_exn array_const in
@@ -77,7 +79,7 @@ let json_handler t : Cyberlogic.goal_handler =
             _ -> ()
           (* if anything fails, add nothing *)
         end
-      | "array_get", [(Const _) as array_const; (Const index) as index_const; _] -> 
+      | "json_array_get", [(Const _) as array_const; (Const index) as index_const; _] -> 
         begin
           try
             let array = array_of_const_exn array_const in
@@ -94,7 +96,7 @@ let json_handler t : Cyberlogic.goal_handler =
             _ -> ()
           (* if anything fails, add nothing *)
         end
-      | "object_get", [(Const _) as obj_const; (Const field_sym) as field_const; _] -> 
+      | "json_object_get", [(Const _) as obj_const; (Const field_sym) as field_const; _] -> 
         begin
           try
             let obj = object_of_const_exn obj_const in
@@ -111,6 +113,16 @@ let json_handler t : Cyberlogic.goal_handler =
           with
             _ -> ()
           (* if anything fails, add nothing *)
+        end
+      | "json_string_get", [(Const _) as str_const; _] ->
+        begin
+          try        
+            let str = string_of_const_exn str_const in
+            Cyberlogic.db_add_fact t.db 
+              (Cyberlogic.Literal.make h Cyberlogic.Yellow t.id 
+                 [str_const; Default.mk_const (StringSymbol.make (quote str))])
+          with
+            e -> Js.log(e)
         end
       | "int_of_string", [Const s as s_const; _] ->         
         Cyberlogic.db_add_fact t.db 
