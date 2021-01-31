@@ -1,0 +1,91 @@
+@import './mixins.scss';
+@import './overrides.scss';
+
+.fact-sheet__illo {
+  max-width: 100%;
+}
+
+.fact-sheet__banner {
+  padding-top: $spacing-05;
+  padding-bottom: $spacing-07 * 4;
+  @include fact-sheet-background;
+}
+
+.fact-sheet__heading {
+  @include carbon--type-style('productive-heading-05');
+}
+
+.fact-sheet__r2 {
+  margin-top: rem(-40px);
+}
+
+.fact-sheet__tab-content {
+  padding-top: $layout-05;
+  padding-bottom: $layout-05;  
+  padding-left: $layout-02;  
+}
+
+.fact-sheet__subheading {
+  padding-top: $spacing-05;
+  // padding-bottom: $spacing-05;
+  @include carbon--type-style('productive-heading-02');
+  @include carbon--font-weight('semibold');
+}
+
+.fact-sheet__subsubheading {
+  padding-top: $spacing-02;
+  // padding-bottom: $spacing-05;
+  @include carbon--type-style('productive-heading-01');
+}
+
+.fact-sheet__toc {
+  align-self: flex-start;
+  position: sticky;
+  position: -webkit-sticky;
+  top: 0;
+}
+
+.fact-sheet__p {
+  @include carbon--type-style('body-long-02');
+  margin-top: $spacing-05;
+  margin-bottom: $spacing-05;
+
+  @include carbon--breakpoint-between((320px + 1), md) {
+    max-width: 75%;
+  }
+}
+
+.fact-sheet__code {
+  margin-top: $spacing-05;
+  margin-bottom: $spacing-08;
+  @include carbon--type-style('code-02');
+}
+
+.fact-sheet__missing {
+  color: #da1e28  ;
+}
+
+.fact-sheet__r3 {
+  padding-top: $spacing-09;
+  padding-bottom: $spacing-09;
+  @include fact-sheet-background;
+}
+
+.fact-sheet__label {
+  @include carbon--type-style('heading-01');
+}
+
+.fact-sheet__snippet {
+  color:red;
+ }
+ 
+.green {
+  fill: green;
+}
+.yellow {
+  fill: green;
+  background-color: yellow;
+}
+.red {
+  fill: red;
+}
