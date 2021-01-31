@@ -1,6 +1,4 @@
-/* 
-  TODO: Replace the testing ids with actual ids. 
-*/
+/* TODO: everyone has recorded a hash for the training data */
 'aggregator':
   Subject: 'OU=client+OU=org1+OU=department1,CN=aggregator'
   Issuer: 'C=US,ST=North Carolina,L=Durham,O=org1.example.com,CN=ca.org1.example.com'
@@ -87,6 +85,7 @@ message_not_received :-
   Party attests sent_model_update(U),
   not_received(U).
 
+/* A message was sent by some party but never received by aggregator */
 not_received(U) :-
   rounds(N),
   not_received_after_round(U, N).

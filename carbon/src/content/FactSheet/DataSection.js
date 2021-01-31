@@ -57,8 +57,9 @@ const DataSection = props =>
         empty={<ListItem>Information about the fusion algorithm it (still) missing.<ClaimFail /></ListItem>}>
         {claims =>
           claims.map(claim =>
-            <ListItem key={JSON.stringify(claim)}>The training data of {getFirstCN(claim.principal.subject)} has the following hash.
-            <ClaimOk claim={claim} />
+            <ListItem key={JSON.stringify(claim)}>
+              The training data of {getFirstCN(claim.principal.subject)} has the following hash.
+              <ClaimOk claim={claim} />
               <CodeSnippet type="single" hideCopyButton={true}>
                 {claim.args[0]}
               </CodeSnippet>

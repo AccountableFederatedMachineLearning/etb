@@ -64,7 +64,7 @@ const StatusSection = props =>
         empty="">
         {claims =>
           <Problems db={props.db} key="forbidden" />
-          }
+        }
       </Instances>
     </p>
   </>

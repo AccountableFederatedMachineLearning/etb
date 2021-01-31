@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>Factsheet</title>
+  <title>Node Status</title>
 
   <style>
     body {
@@ -209,92 +209,7 @@
       render() {
         return (
           <>
-            <h1>Facts</h1>
-
-            <h2>Summary</h2>
-
-            <p>
-              <FactInstances db={this.state}
-                symbol="required"
-                format="All the required steps were completed successfully"
-                default="Not all the required steps were completed sucessfully" />.
-            </p>
-            <ul>
-              <li>
-                <FactInstances db={this.state}
-                  symbol="received_messages_were_all_sent"
-                  format="All model-updates received by the aggregator were sent by a party."
-                  default="Not all model-updates received by the aggregator were sent by a party." />
-              </li>
-              <li>
-                TODO: more here
-              </li>
-            </ul>
-
-            <p>
-              <FactInstances db={this.state}
-                symbol="forbidden"
-                format={<Problems db={this.state} />}
-                default={<></>} />
-            </p>
-
-            <h2>Participants</h2>
-
-            <p>
-              The following parties have participated in the learning process:
-                <FactInstances db={this.state} symbol="configuration"
-                format={(principal, symbol, args) => <>{principal}</>} />
-            </p>
-
-            <h2>Configuration</h2>
-
-            <p>
-              The training process is configured to use <FactInstances db={this.state} symbol="rounds" format={args => args[0]} /> rounds
-                and <FactInstances db={this.state} symbol="parties" format={args => args[0]} /> parties.
-            </p>
-
-            <p>
-              The termination accuracy was set to
-              <FactInstances db={this.state} symbol="termination_accuracy" format={args => args[0]} />{" "}
-                and the
-                timeout was set to <FactInstances db={this.state} symbol="max_timeout" format={args => args[0]} />.
-                  </p>
-
-            <p>
-              <FactInstances db={this.state} symbol="configuration"
-                principal="aggregator"
-                format={(principal, symbol, args) => {
-                  let config = jsonOfConstant(args[0]);
-                  if (config.fusion.cls_ref === undefined) {
-                    return null;
-                  } else {
-                    return <>
-                      The {principal} uses the fusion algorithm <tt>{config.fusion.cls_ref}.</tt>
-                    </>
-                  }
-                }
-                } />
-            </p>
-
-
-            <h2>Model Information</h2>
-
-            <FactInstances db={this.state} symbol="configuration"
-              format={(principal, symbol, args) => {
-                let config = jsonOfConstant(args[0]);
-                return <>
-                  <h3>Model details of {principal}</h3>
-
-                  <ul>
-                    <li> Model name: <tt>{config.model.spec.model_name}</tt> </li>
-                    <li> Model definition: <tt>{config.model.spec.model_definition}</tt> </li>
-                    <li> Class reference: <tt>{config.model.cls_ref}</tt> </li>
-                  </ul>
-                </>
-              }
-              } />
-
-            <h2>Everything</h2>
+            <h2>All claims</h2>
             <AllFacts db={this.state} />
           </>
         );

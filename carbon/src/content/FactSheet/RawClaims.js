@@ -25,8 +25,6 @@ export function RawClaims(props) {
             </UnorderedList>
           }
         </Instances>
-        <p className="fact-sheet__code">
-        </p>
       </React.Fragment>)}
   </UnorderedList>;
 }

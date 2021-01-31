@@ -7,10 +7,14 @@ const syntax = require('./syntax.bs')
 const id = require('./id.bs')
 const logicService = require('./logicService.bs')
 const rest = require('./rest.bs')
-const app = express()
+const app = express();
 const bodyParser = require('body-parser');
 var http = require('http').createServer(app);
-var io = require('socket.io')(http);
+var io = require('socket.io')(http, {
+  cors: {
+    origin: '*',
+  }
+});
 
 const fact_event = 'fact';
 
@@ -57,14 +61,17 @@ async function main() {
     }
     return;
   }
-
+  
   app.use(bodyParser.json());
 
   // Register REST endpoints
-
-  app.get('/', async (req, res) => {
-    res.sendFile(__dirname + "/html/index.html");
-  })
+  const carbonDir = __dirname + '/../carbon/build';
+  console.log(carbonDir);
+  if (fs.existsSync(carbonDir)) {
+    app.use(express.static(carbonDir));
+  } else {
+    app.use(express.static(__dirname + '/html'));
+  }
 
   app.get('/facts', async (req, res) => {
     const response = await rest.facts_get(db);

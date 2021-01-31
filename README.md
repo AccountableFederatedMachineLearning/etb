@@ -22,6 +22,21 @@ that triggers recompilation on each file change:
 npm run watch
 ```
 
+## Optional: FactSheet Demonstrator for Civitas Use-Case
+
+By default, the program is configured to serve a simple html status
+page when accessed with a browser (see below).
+
+A factsheet demonstrator for the civitas use-case can be enabled
+using the following commands.
+```
+cd carbon
+npm install
+npm build
+```
+This will replace the simple status page with a factsheet example.
+
+
 # Configuration
 
 For the connection to Hyperledger Fabric, the following information
@@ -61,11 +76,15 @@ In a second terminal, start
 If the connection to hyperledger succeeds, the two nodes should start
 interacting with each other.
 
+# Browser interface
+
+Under `localhost:5000` the program provides a status page that can allows
+one to track updates in the browser. (If the factsheet demonstrator was
+installed as described in Section [Build](#Build), it will show the 
+factsheet).
 
 # REST interface
 
-- `http GET localhost:5000` provides a status page that can be used to
-track updates
 
 - `http GET localhost:5000/facts` lists all facts on the node in JSON format
 

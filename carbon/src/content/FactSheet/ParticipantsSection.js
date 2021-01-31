@@ -21,7 +21,7 @@ const configTableHeader = [
 const ParticipantsTable = props =>
   <Instances db={props.db}
     symbol="configuration"
-    empty={<>Hyper-parameter information is (still) missing.<ClaimFail/></>}>
+    empty={<>Hyper-parameter information is (still) missing.<ClaimFail /></>}>
     {claims => {
       const data = claims.map(claim =>
       ({
