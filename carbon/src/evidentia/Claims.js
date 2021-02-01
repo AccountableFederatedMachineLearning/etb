@@ -1,7 +1,7 @@
 import React from 'react';
 import Checkmark16 from '@carbon/icons-react/lib/checkmark/16';
 import WarningAlt16 from '@carbon/icons-react/lib/warning--alt/16';
-import {getClaims, getFirstCN} from './FactDB';
+import { getClaims, getFirstCN } from './FactDB';
 
 function jsonOfConstant(s) {
   if (s[0] === '\'' && s[s.length - 1] === '\'') {
@@ -14,28 +14,6 @@ function jsonOfConstant(s) {
     return null
   }
 }
-
-// function getClaims(db, symbol, principal = undefined) {
-//   if (db[symbol] === undefined) {
-//     return [];
-//   }
-//   const principals = Object.keys(db[symbol]).filter(p =>
-//     principal === undefined || p === principal);
-//   const facts = principals.flatMap(p => {
-//     const colorsByArgs = db[symbol][p];
-//     const allArgs = Object.keys(colorsByArgs).map(JSON.parse);
-//     return allArgs.map(args => {
-//       const colors = colorsByArgs[JSON.stringify(args)];
-//       return {
-//         symbol: symbol,
-//         principal: p,
-//         args: args,
-//         colors: colors
-//       }
-//     });
-//   });
-//   return facts;
-// }
 
 function claimText(claim) {
   let text = "";
@@ -77,13 +55,14 @@ function Instances(props) {
 function Expected(props) {
   let children = props.children;
   if (children === undefined) {
-    children = claims => claims.map(claim => <ClaimOk claim={claim} key={JSON.stringify(claim)} />)
+    children = claims => claims.map(claim =>
+      <ClaimOk claim={claim} key={JSON.stringify(claim)} />)
   }
 
   return <Instances db={props.db} symbol={props.symbol} principal={props.principal}
     empty={<ClaimFail reason={claimText(props) + " is not derivable"} />}>
     {children}
-    </Instances>
+  </Instances>
 }
 
 function NotExpected(props) {
@@ -94,8 +73,8 @@ function NotExpected(props) {
 
   return <Instances db={props.db} symbol={props.symbol} principal={props.principal}
     empty={<ClaimOk reason={claimText(props) + " is not derivable"} />}>
-      {children}
-    </Instances>
+    {children}
+  </Instances>
 }
 
 
@@ -117,4 +96,4 @@ function ClaimOk(props) {
   return <span title={reason}><Checkmark16 className={styleClass} /></span>
 }
 
-export {ClaimOk, ClaimFail, Instances, Expected, NotExpected, jsonOfConstant}
+export { ClaimOk, ClaimFail, Instances, Expected, NotExpected, jsonOfConstant }

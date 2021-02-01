@@ -3,9 +3,9 @@ import {
   UnorderedList,
   CodeSnippet,
   ListItem,
-  DataTable, TableContainer, Table, TableHeader, TableHead, TableRow, TableBody, TableCell
+  DataTable, Table, TableHeader, TableHead, TableRow, TableBody, TableCell
 } from 'carbon-components-react';
-import { Instances, ClaimOk, ClaimFail, jsonOfConstant, getFirstCN } from '../../evidentia';
+import { Instances, ClaimOk, ClaimFail, jsonOfConstant } from '../../evidentia';
 
 const configTableHeader = [
   {
@@ -134,27 +134,6 @@ const ConfigurationSection = props =>
 
     <ConfigTable db={props.db} />
 
-    {/* <Instances db={props.db}
-      symbol="configuration"
-      principal="aggregator"
-      found={claims =>
-        claims.map(claim => {
-          let config = jsonOfConstant(claim.args[0]);
-          if (config.hyperparams === undefined || config.hyperparams.global === undefined) {
-            return null;
-          } else {
-            return <>
-              <UnorderedList>
-                <ListItem>Maximum timeout: {config.hyperparams.global.max_timeout}<ClaimOk claim={claim} /></ListItem>
-                <ListItem>Number of parties: {config.hyperparams.global.parties}<ClaimOk claim={claim} /></ListItem>
-                <ListItem>Number of rounds: {config.hyperparams.global.rounds}<ClaimOk claim={claim} /></ListItem>
-                <ListItem>Termination accuracy: {config.hyperparams.global.termination_accuracy}<ClaimOk claim={claim} /></ListItem>
-              </UnorderedList>
-            </>
-          }
-        })}
-      empty={<>Hyper-parameter information is (still) missing.<ClaimFail /></>}
-    />*/}
     <p className="fact-sheet__p"></p>
 
     <h3 className="fact-sheet__subsubheading">Local Hyper-Parameters</h3>
@@ -190,54 +169,5 @@ const ConfigurationSection = props =>
     </Instances>
     <p className="fact-sheet__p"></p>
   </>
-
-
-{/* <UnorderedList>
-<ListItem>
-  Number of rounds:
-  <Expected db={this.state} symbol="rounds"
-    found={claims => <>{claims[0].args}<ClaimOk claim={claims[0]} /></>}
-  />
-</ListItem>
-<ListItem>
-  Number of parties:
- <Expected db={this.state} symbol="parties"
-    found={claims => <>{claims[0].args}<ClaimOk claim={claims[0]} /></>}
-  />
-</ListItem>
-<ListItem>
-  The termination accuracy was set to <Expected db={this.state} symbol="termination_accuracy"
-    found={claims => <>{claims[0].args}<ClaimOk claim={claims[0]} /></>}
-  />.
-</ListItem>
-<ListItem>
-  The maximum timeout was set to <Expected db={this.state} symbol="max_timeout"
-    found={claims => <>{claims[0].args}<ClaimOk claim={claims[0]} /></>}
-  />.
-</ListItem>
-<ListItem>
-  <Instances db={this.state}
-    symbol="configuration"
-    principal="aggregator"
-    found={claims =>
-      claims.map(claim => {
-        let config = jsonOfConstant(claim.args[0]);
-        if (config.fusion.cls_ref === undefined) {
-          return null;
-        } else {
-          return <>
-            The {claim.principal} uses the fusion algorithm '<tt>{config.fusion.cls_ref}</tt>'.
-          <ClaimOk claim={claim} />
-          </>
-        }
-      })}
-    empty={<>Information about the fusion algorithm it (still) missing.<ClaimFail /></>}
-  />
-</ListItem>
-</UnorderedList>
-
-<p className="fact-sheet__p">
-</p> */}
-
 
 export { ConfigurationSection }

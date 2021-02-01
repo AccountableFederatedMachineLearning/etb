@@ -1,10 +1,9 @@
 import React from 'react';
 import {
   UnorderedList,
-  CodeSnippet,
   ListItem,
 } from 'carbon-components-react';
-import { Instances, Expected, NotExpected, ClaimOk, ClaimFail, jsonOfConstant } from '../../evidentia';
+import { Instances, Expected, NotExpected } from '../../evidentia';
 
 
 // TODO
@@ -35,8 +34,8 @@ const StatusSection = props =>
     </h2>
 
     <p className="fact-sheet__p">
-      This FactSheet documents the evidence that all the participants have correctly
-      followed the federated machine learning process.
+      This FactSheet documents the evidence that all the participants have
+      correctly followed the federated machine learning process.
       <Expected db={props.db} symbol="required" />
     </p>
 

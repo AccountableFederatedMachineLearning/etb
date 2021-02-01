@@ -1,11 +1,8 @@
 import React from 'react';
 import {
-  UnorderedList,
-  CodeSnippet,
-  ListItem,
-  DataTable, TableContainer, Table, TableHeader, TableHead, TableRow, TableBody, TableCell
+  DataTable, Table, TableHeader, TableHead, TableRow, TableBody, TableCell
 } from 'carbon-components-react';
-import { Instances, ClaimOk, ClaimFail, jsonOfConstant, getFirstCN, getOU } from '../../evidentia';
+import { Instances, ClaimOk, ClaimFail, getFirstCN, getOU } from '../../evidentia';
 
 const configTableHeader = [
   {

@@ -12,7 +12,14 @@ import { InfoSection, InfoCard } from '../../components/Info';
 import Globe32 from '@carbon/icons-react/lib/globe/32';
 import PersonFavorite32 from '@carbon/icons-react/lib/person--favorite/32';
 import Application32 from '@carbon/icons-react/lib/application/32';
-import { ETBListener, Instances, Expected, NotExpected, ClaimOk, ClaimFail, jsonOfConstant, getFirstCN, getOU } from '../../evidentia';
+import {
+  ETBListener,
+  Instances,
+  ClaimOk,
+  ClaimFail,
+  jsonOfConstant,
+  getFirstCN
+} from '../../evidentia';
 import { StatusSection } from './StatusSection';
 import { DataSection } from './DataSection';
 import { ConfigurationSection } from './ConfigurationSection';
@@ -46,7 +53,7 @@ class FactSheet extends ETBListener {
             </Breadcrumb>
             <h1 className="fact-sheet__heading">
               Citizen Participation Factsheet
-          </h1> 
+          </h1>
           </div>
         </div>
         <div className="bx--row fact-sheet__r2">
@@ -106,29 +113,13 @@ class FactSheet extends ETBListener {
                         The produce a model using federated machine learning.
                       </p>
 
-                      <StatusSection db={this.state}/>
+                      <StatusSection db={this.state} />
 
-                      {/* <h2 id="participants" className="fact-sheet__subheading">
-                        Participants
-                      </h2>
+                      <ParticipantsSection db={this.state} />
 
-                      <p className="fact-sheet__p">                        
-                      The following parties have participated in the learning process:
-                      </p>
-                      <Expected db={this.state} symbol="configuration"
-                        found={claims => <UnorderedList>
-                          {claims.map(claim => 
-                          <ListItem key={JSON.stringify(claim)}>{getOU(claim.principal.subject)}<ClaimOk claim={claim} /></ListItem>)
-                          }
-                        </UnorderedList>} />
- */}
-                      <ParticipantsSection db={this.state}/>
+                      <ConfigurationSection db={this.state} />
 
-                      <ConfigurationSection db={this.state}/>
-
-                      <DataSection db={this.state}/>
-
-
+                      <DataSection db={this.state} />
 
                       <h2 id="modelinformation" className="fact-sheet__subheading">
                         Model Information
@@ -137,31 +128,30 @@ class FactSheet extends ETBListener {
                       <p className="fact-sheet__p">
                       </p>
 
-                        <Instances db={this.state} symbol="configuration"
-                          empty={<>Information about the configuration of participants is (still) missing.<ClaimFail /></>}>
+                      <Instances db={this.state} symbol="configuration"
+                        empty={<>Information about the configuration of participants is (still) missing.<ClaimFail /></>}>
                         {claims =>
-                            claims.map(claim => {
-                              let config = jsonOfConstant(claim.args[0]);
-                              return <React.Fragment key={JSON.stringify(claim)}>
-                                <h3 className="fact-sheet__subsubheading">
-                                  Model details of {getFirstCN(claim.principal.subject)}
-                                  <ClaimOk claim={claim} />
-                                </h3>
+                          claims.map(claim => {
+                            let config = jsonOfConstant(claim.args[0]);
+                            return <React.Fragment key={JSON.stringify(claim)}>
+                              <h3 className="fact-sheet__subsubheading">
+                                Model details of {getFirstCN(claim.principal.subject)}
+                                <ClaimOk claim={claim} />
+                              </h3>
 
-                                <UnorderedList>
-                                  <ListItem> Model name: <tt>{config.model.spec.model_name}</tt> </ListItem>
-                                  <ListItem> Model definition: <tt>{config.model.spec.model_definition}</tt> </ListItem>
-                                  <ListItem> Class reference: <tt>{config.model.cls_ref}</tt> </ListItem>
-                                </UnorderedList>
-                              </React.Fragment>
-                            })}
-                        </Instances>
+                              <UnorderedList>
+                                <ListItem> Model name: <tt>{config.model.spec.model_name}</tt> </ListItem>
+                                <ListItem> Model definition: <tt>{config.model.spec.model_definition}</tt> </ListItem>
+                                <ListItem> Class reference: <tt>{config.model.cls_ref}</tt> </ListItem>
+                              </UnorderedList>
+                            </React.Fragment>
+                          })}
+                      </Instances>
                     </div>
                     <div className="bx--col-md-0 bx--col-md-0 bx--offset-lg-1 bx--col-lg-3 ">
                       <img
                         className="fact-sheet__illo"
                         src={"https://aifs360.mybluemix.net/fslogo.png"}
-                        //                        src={`${process.env.PUBLIC_URL}/tab-illo.png`}
                         alt="Carbon illustration"
                       />
                     </div>
@@ -194,7 +184,7 @@ class FactSheet extends ETBListener {
                   </div>
                 </div>
               </Tab>
-            </Tabs>            
+            </Tabs>
           </div>
         </div>
         <InfoSection heading="The Principles" className="fact-sheet__r3">

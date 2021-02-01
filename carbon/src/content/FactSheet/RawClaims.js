@@ -20,8 +20,10 @@ export function RawClaims(props) {
             <UnorderedList>
               {claims.map(claim =>
                 <ListItem key={JSON.stringify(claim)}>
-                  {getFirstCN(claim.principal.subject)} attests {claim.symbol}({claim.args.join(", ")})
-                      </ListItem>)}
+                  {getFirstCN(claim.principal.subject)}
+                  attests
+                  {claim.symbol}({claim.args.join(", ")})
+                </ListItem>)}
             </UnorderedList>
           }
         </Instances>

@@ -28,7 +28,8 @@ const DataSection = props =>
             } else {
               return <React.Fragment key={JSON.stringify(claim)}>
                 <ListItem>
-                  {getFirstCN(claim.principal.subject)} records the following information about the used data:
+                  {getFirstCN(claim.principal.subject)}
+                  records the following information about the used data:
                   <ClaimOk claim={claim} />
                   <CodeSnippet type="single" hideCopyButton={true}>
                     {JSON.stringify(config.data.info)}
