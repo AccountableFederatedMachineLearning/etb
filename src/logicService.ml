@@ -48,7 +48,14 @@ let rec flush_pending t : unit Js.Promise.t =
 (* Fact handler to queue yellow facts *)
 let log_yellow_facts t : Cyberlogic.fact_handler =
   fun (fact : Cyberlogic.Literal.t) ->
+  (* TODO: only log own facts *)  
   Logger.fdebug "adding fact '%s' to db" (Syntax.Cyberlogic.short_literal fact);
+  let clause, premises = Cyberlogic.db_premises t.db fact in
+  Logger.debug 
+    (Printf.sprintf
+       "fact was derived by clause '%s' with premises [%s]." 
+       (Syntax.Cyberlogic.short_clause clause)
+       (String.concat ", " (List.map Syntax.Cyberlogic.short_literal premises)));
   match Cyberlogic.Literal.color fact with
   | Yellow ->
     Logger.debug("queueing log(" ^ Syntax.Cyberlogic.short_literal fact ^ ")");
@@ -235,8 +242,10 @@ module ClaimEvent = struct
       }
 end
 
-let claim_event_listener t (payload: string): unit Js.Promise.t =
-  Logger.debug("receiving event '" ^ payload ^ "'");
+let claim_event_listener t (payload: string) (transactionId: string)
+  : unit Js.Promise.t =
+  Logger.debug("receiving event: transaction " ^ 
+               transactionId ^ ": '" ^ payload ^ "'");
   begin
     try
       let open ClaimEvent in
@@ -246,7 +255,8 @@ let claim_event_listener t (payload: string): unit Js.Promise.t =
       let principal = Cyberlogic.Principal.Id id in
       let plain_literal = Syntax.Datalog.parse_literal_exn claim_event.claim in
       let (s, args) = Default.open_literal plain_literal in
-      let green_literal = Cyberlogic.Literal.make s Green principal args in
+      let green = Cyberlogic.Green(transactionId) in
+      let green_literal = Cyberlogic.Literal.make s green principal args in
       Cyberlogic.db_add_fact t.db green_literal
     with _ ->
       Logger.debug("Error when adding '" ^ payload ^ "'")

@@ -62,7 +62,10 @@ async function connect(userId) {
 // TODO: This listens to all events
 async function addContractListener(contract, listener) {
   const l = async (event) => {
-    listener(event.payload.toString());
+    const transactionEvent = event.getTransactionEvent();
+    if (transactionEvent.isValid) {
+      listener(event.payload.toString(), transactionEvent.transactionId);
+    }
   };
   contract.addContractListener(l);
 }

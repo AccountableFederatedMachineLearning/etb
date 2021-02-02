@@ -143,12 +143,12 @@ module Cyberlogic = struct
   let short_literal literal =
     let ansi_color = match Literal.color literal with 
       | Yellow -> "\027[0;33m"
-      | Green -> "\027[0;32m"
+      | Green _ -> "\027[0;32m"
       | ColorVar _ -> "" in
     let ansi_default_color = "\027[0;39m" in
     let color_string = match Literal.color literal with 
       | Yellow -> "yellow"
-      | Green -> "green"
+      | Green tid -> "green:" ^ tid
       | ColorVar i when i >= 0 -> "X" ^ (string_of_int i)
       | ColorVar i -> "Y" ^ (string_of_int (-i)) in
     let principal_string = 

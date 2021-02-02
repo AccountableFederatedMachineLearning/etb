@@ -1,27 +1,31 @@
 open Default
 
+type transaction_id = string
+
 type color =
   | Yellow
-  | Green
+  | Green of transaction_id
   | ColorVar of int
 
 (** Colors encoded as constant terms *)
 
 let color_term c = 
   let yellow = mk_const (StringSymbol.make "yellow") in
-  let green = mk_const (StringSymbol.make "green") in
+  let green tid = mk_const (StringSymbol.make ("green:" ^ tid)) in
   match c with 
   | Yellow -> yellow 
-  | Green -> green
+  | Green tid -> green tid
   | ColorVar i -> mk_var i
 
 let color_from_term c = 
   match c with
   | Var i -> ColorVar i
-  | Const _ ->
-    if eq_term c (color_term Yellow) then Yellow
-    else if eq_term c (color_term Green) then Green
-    else failwith "term must be yellow, green or variable"
+  | Const sym ->
+    let s = Default.StringSymbol.to_string sym in
+    if s = "yellow" then Yellow
+    else match String.split_on_char ':' s with
+      | ["green"; tid] -> Green tid
+      | _ -> failwith "term must be yellow, green or variable"
 
 let is_color_term c =
   ignore (color_from_term c); (* fails if c is not color *)
@@ -72,6 +76,7 @@ module Literal = struct
 
   type t_json = {
     color : string;
+    transaction : string option;
     principal : Principal.t_json;
     literal : literal_json
   } and literal_json = {
@@ -107,8 +112,14 @@ module Literal = struct
       begin
         match color literal with
         | Yellow -> "yellow"
-        | Green -> "green"
+        | Green _ -> "green"
         | ColorVar i -> "X" ^ (string_of_int i)
+      end;
+    transaction = 
+      begin
+        match color literal with
+        | Green tid -> Some tid
+        | _ -> None
       end;
     principal = Principal.to_json (principal literal);
     literal =
@@ -181,6 +192,9 @@ let db_subscribe_all_facts =
 
 let db_subscribe_goal =
   Default.db_subscribe_goal
+
+let db_premises =
+  Default.db_premises
 
 let db_explain =
   Default.db_explain

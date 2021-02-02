@@ -1,6 +1,8 @@
+type transaction_id = string
+
 type color =
   | Yellow
-  | Green
+  | Green of transaction_id
   | ColorVar of int
 
 module Principal : sig
@@ -24,6 +26,7 @@ module Literal : sig
 
   type t_json = {
     color : string;
+    transaction : string option;
     principal : Principal.t_json;
     literal : literal_json
   } and literal_json = {
@@ -86,6 +89,10 @@ type goal_handler = Literal.t -> unit
 val db_subscribe_fact : db -> Default.symbol -> fact_handler -> unit
 val db_subscribe_all_facts : db -> fact_handler -> unit
 val db_subscribe_goal : db -> goal_handler -> unit
+
+val db_premises : db -> Literal.t -> Clause.t * Literal.t list
+(** Immediate premises of the fact (ie the facts that resolved with
+    a clause to give the literal), plus the clause that has been used. *)
 
 val db_explain : db -> Literal.t -> Literal.t list
 (** Explain the given fact by returning a list of facts that imply it

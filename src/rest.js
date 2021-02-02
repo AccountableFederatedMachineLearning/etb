@@ -62,12 +62,11 @@ async function main() {
     }
     return;
   }
-  
+
   app.use(bodyParser.json());
 
   // Register REST endpoints
   const carbonDir = __dirname + '/../carbon/build';
-  console.log(carbonDir);
   if (fs.existsSync(carbonDir)) {
     app.use(express.static(carbonDir));
   } else {
