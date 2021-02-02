@@ -23,7 +23,7 @@ const DataSection = props =>
         {claims =>
           claims.map(claim => {
             let config = jsonOfConstant(claim.args[0]);
-            if (config.data.info === undefined) {
+            if (config?.data?.info === undefined) {
               return null;
             } else {
               return <React.Fragment key={JSON.stringify(claim)}>
@@ -32,7 +32,7 @@ const DataSection = props =>
                   records the following information about the used data:
                   <ClaimOk claim={claim} />
                   <CodeSnippet type="single" hideCopyButton={true}>
-                    {JSON.stringify(config.data.info)}
+                    {JSON.stringify(config?.data?.info)}
                   </CodeSnippet>
                 </ListItem>
               </React.Fragment>

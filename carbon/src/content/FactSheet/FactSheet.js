@@ -140,9 +140,9 @@ class FactSheet extends ETBListener {
                               </h3>
 
                               <UnorderedList>
-                                <ListItem> Model name: <tt>{config.model.spec.model_name}</tt> </ListItem>
-                                <ListItem> Model definition: <tt>{config.model.spec.model_definition}</tt> </ListItem>
-                                <ListItem> Class reference: <tt>{config.model.cls_ref}</tt> </ListItem>
+                                <ListItem> Model name: <tt>{config?.model?.spec?.model_name}</tt> </ListItem>
+                                <ListItem> Model definition: <tt>{config?.model?.spec?.model_definition}</tt> </ListItem>
+                                <ListItem> Class reference: <tt>{config?.model?.cls_ref}</tt> </ListItem>
                               </UnorderedList>
                             </React.Fragment>
                           })}

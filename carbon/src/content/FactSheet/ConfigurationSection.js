@@ -26,7 +26,7 @@ const ConfigTable = props =>
     {claims =>
       claims.map(claim => {
         let config = jsonOfConstant(claim.args[0]);
-        if (config.hyperparams === undefined || config.hyperparams.global === undefined) {
+        if (config?.hyperparams.global === undefined) {
           return null;
         } else {
           const data = [
