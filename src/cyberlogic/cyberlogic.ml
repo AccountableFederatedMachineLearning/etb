@@ -67,6 +67,12 @@ module Principal = struct
                         issuer = Id.DN.to_json id.issuer }
     | Undefined -> Undefined
 
+  let equals p q = 
+    match p, q with
+    | Var i, Var j -> i = j
+    | Id i, Id j -> Id.equals i j
+    | Undefined, Undefined -> true
+    | _ -> false
 end
 (** Literals *)
 

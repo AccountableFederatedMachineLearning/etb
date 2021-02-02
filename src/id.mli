@@ -22,6 +22,7 @@ module DN : sig
 
   val get : t -> string -> string option
 
+  val equals : t -> t -> bool
 end
 
 (** Identity *)
@@ -34,6 +35,8 @@ type t_json = {
   subject : DN.t_json;
   issuer : DN.t_json
 }
+
+val equals : t -> t -> bool
 
 val of_DNs_exn : subjectDN : string -> issuerDN : string -> t
 

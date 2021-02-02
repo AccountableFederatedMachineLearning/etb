@@ -9,8 +9,8 @@ module Principal : sig
   type t =
     | Var of int
     | Id of Id.t
-    | Undefined (* Neede because we don't have typed terms. It's the 
-                   catch-all for non-welltypes values. *)
+    | Undefined (* Needed because we don't have typed terms in Datalog. 
+                   It's the catch-all for non-welltyped values. *)
 
   type t_json =
     | VarJSON of { var : int }
@@ -18,6 +18,8 @@ module Principal : sig
     | Undefined
 
   val to_term : t -> Default.term
+
+  val equals : t -> t -> bool
 end
 
 module Literal : sig

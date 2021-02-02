@@ -49,29 +49,32 @@ let rec flush_pending t : unit Js.Promise.t =
 let log_yellow_facts t : Cyberlogic.fact_handler =
   fun (fact : Cyberlogic.Literal.t) ->
   (* TODO: only log own facts *)  
-  Logger.fdebug "adding fact '%s' to db" (Syntax.Cyberlogic.short_literal fact);
-  let clause, premises = Cyberlogic.db_premises t.db fact in
-  Logger.debug 
-    (Printf.sprintf
-       "fact was derived by clause '%s' with premises [%s]." 
-       (Syntax.Cyberlogic.short_clause clause)
-       (String.concat ", " (List.map Syntax.Cyberlogic.short_literal premises)));
-  match Cyberlogic.Literal.color fact with
-  | Yellow ->
-    Logger.debug("queueing log(" ^ Syntax.Cyberlogic.short_literal fact ^ ")");
-    let rec log_action () = 
-      match t.contract with
-      | Some contract ->
-        let plain_literal = Cyberlogic.Literal.plain_literal fact in
-        Default.pp_literal Format.str_formatter plain_literal;
-        let literal_string = Format.flush_str_formatter () in
-        Fabric.add_claim contract literal_string
-      | None -> 
-        (* If no contract is installed, log the action again for later execution *)
-        run_later t log_action;
-        pure () in
-    run_later t log_action
-  | _ -> ()
+  if Cyberlogic.(Principal.equals (Literal.principal fact) t.id) then
+    begin
+      Logger.fdebug "adding fact '%s' to db" (Syntax.Cyberlogic.short_literal fact);
+      let clause, premises = Cyberlogic.db_premises t.db fact in
+      Logger.debug 
+        (Printf.sprintf
+           "  - the fact was derived by clause '%s' with premises [%s]." 
+           (Syntax.Cyberlogic.short_clause clause)
+           (String.concat ", " (List.map Syntax.Cyberlogic.short_literal premises)));
+      match Cyberlogic.Literal.color fact with
+      | Yellow ->
+        Logger.debug("  - queueing log(" ^ Syntax.Cyberlogic.short_literal fact ^ ")");
+        let rec log_action () = 
+          match t.contract with
+          | Some contract ->
+            let plain_literal = Cyberlogic.Literal.plain_literal fact in
+            Default.pp_literal Format.str_formatter plain_literal;
+            let literal_string = Format.flush_str_formatter () in
+            Fabric.add_claim contract literal_string
+          | None -> 
+            (* If no contract is installed, log the action again for later execution *)
+            run_later t log_action;
+            pure () in
+        run_later t log_action
+      | _ -> ()
+    end
 
 let json_handler t : Cyberlogic.goal_handler =
   let no_quotes_exn s = 

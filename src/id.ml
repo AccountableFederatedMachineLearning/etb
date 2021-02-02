@@ -24,6 +24,9 @@ module DN = struct
 
   external to_json :  t -> t_json = "toJSON" [@@bs.send]
 
+  let equals n m =
+    to_string m = to_string m
+
   let get (name : t) (key : string) : string option =
     let json = to_json name in
     Array.fold_left (fun x attrib ->
@@ -41,6 +44,10 @@ type t = {
   subject : DN.t;
   issuer : DN.t
 }
+
+let equals i j =
+  DN.equals i.subject j.subject &&
+  DN.equals i.subject j.subject
 
 let of_DNs_exn ~subjectDN ~issuerDN : t =
   { subject = DN.make_exn subjectDN;
