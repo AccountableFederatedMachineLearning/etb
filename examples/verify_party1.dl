@@ -1,0 +1,57 @@
+'aggregator':
+  Subject: 'OU=client+OU=org1+OU=department1,CN=aggregator'
+  Issuer: 'C=US,ST=North Carolina,L=Durham,O=org1.example.com,CN=ca.org1.example.com'
+'party1':
+  Subject: 'OU=client+OU=org1+OU=department1,CN=party1'
+  Issuer: 'C=US,ST=North Carolina,L=Durham,O=org1.example.com,CN=ca.org1.example.com'
+'auditor':
+  Subject: 'OU=client+OU=org1+OU=department1,CN=auditor'
+  Issuer: 'C=US,ST=North Carolina,L=Durham,O=org1.example.com,CN=ca.org1.example.com'
+
+
+all_logs_persistent :-
+  'party1' attests configuration(C),
+  'party1' attests training_data_hash(TrainingHash),
+  'party1' attests training_data_labels_hash(TrainingLablesHash),
+  'party1' attests training_data_size(TrainingDataSize),
+  'party1' attests training_data_labels_number(TrainingDataLabelsNum),
+  'auditor' attests rounds(N),
+  all_messages_were_logged_up_to_round(N).
+
+all_messages_were_logged_up_to_round(0).
+all_messages_were_logged_up_to_round(N) :-
+  'party1' attests received_model_update(Hash1),
+  'aggregator' attests sent_global_model(N, Hash1),
+  'party1' attests sent_model_update (Hash2),
+  'aggregator' attests received_model_update_hashes(N, Hashes),
+  is_in(Hash2, Hashes),
+  sub(N, 1, I),
+  all_messages_were_logged_up_to_round(I). 
+
+is_in(U, Hashes) :-
+  json_array_length(Hashes, N),
+  is_in_i(U, Hashes, 0, N).
+is_in_i(U, Hashes, I, N) :-
+  I < N,
+  json_array_get(Hashes, I, H),
+  U == H.
+is_in_i(U, Hashes, I, N) :-
+  I < N,
+  json_array_get(Hashes, I, H),
+  U != H,
+  add(I, 1, J),
+  is_in_i(U, Hashes, J, N).
+
+
+
+/*
+configuration('{"data": {"cls_ref": "CivitasKerasDataHandler", "info": {"npz_file": "examples/data/civitas/random/data_party1.npz"}}, "model": {"cls_ref": "KerasFLModel", "spec": {"model_definition": "examples/configs/civitas_classifier/compiled_civitas_keras.h5", "model_name": "keras-cnn"}}, "fusion": {}, "connection": {"cls_ref": "FlaskConnection", "info": {"ip": "127.0.0.1", "port": 8086, "tls_config": {"enable": false}}, "sync": false}, "protocol_handler": {"cls_ref": "PartyProtocolHandler"}, "hyperparams": null, "aggregator": {"ip": "127.0.0.1", "port": 5000}, "local_training": {"cls_ref": "LocalTrainingHandler"}, "evidencia": {"cls_ref": "HyperledgerEvidenceRecorder", "info": {"url": "http://localhost:5002/facts/add"}}}').
+training_data_hash('9a6d546f498a8733ea8985a7543f6efa18bddd56f7d7617c891a1bbd3d276b5e').
+training_data_labels_hash('441d04849e20fceaf54ef3c1bfcb2f7789f504db0a0c3a94ffdcae949b82ea2c').
+training_data_size(1041).
+training_data_unique_labels(8).
+received_model_update('"961fbe4bf3518df9ae94e0993e2d2c66eeadb79839f37b234ed6885ebc3c7d39"').
+sent_model_update('"45162f3297daea6c3772a95640170c9f99dbb6e4b774e0702f5c84d9ca545a3a"').
+*/
+
+goal all_logs_persistent.
