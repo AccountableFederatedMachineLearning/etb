@@ -1,24 +1,48 @@
 open Default
 open Promise
 
+let transaction_submit_rate_per_second = 100
+
 (** State of the logic service *)
 type t = { 
   db : Cyberlogic.db;
-  id : Cyberlogic.Principal.t;
+  id : Cyberlogic.Principal.t;  
   mutable contract : Fabric.contract option;
   mutable pending : (unit -> unit Js.Promise.t) list;
+  mutable last_flushed: float;
 }
 
 let run_later t (action : unit -> unit Js.Promise.t) =
   t.pending <- action :: t.pending
 
-(* Execute all pending actions (in unspecified order) *)
-let flush_pending t : unit Js.Promise.t =
-  let pending = t.pending in
-  t.pending <- [];
-  let promises = List.map (fun action -> action ()) pending in
-  Js.Promise.all (Array.of_list promises) >>= fun _ ->
-  pure ()
+(* Execute all pending actions (in unspecified order).
+ * If it cannot submit all transaction due to rate limit,
+ * it sets a timer to a timer to submit later.
+*)
+let rec flush_pending t : unit Js.Promise.t =
+  let one_second = 1000.0 in
+  let repeat_in_two_seconds () = 
+    Js.Global.setTimeout (fun () -> 
+        ignore (flush_pending t)) 2000 |> ignore in
+  let send, keep = 
+    match Belt.List.splitAt t.pending transaction_submit_rate_per_second with 
+    | Some(h, t) -> h, t
+    | None -> t.pending, [] in
+  if keep <> [] then
+    repeat_in_two_seconds ();    
+  if (Js.Date.now() -. t.last_flushed < one_second) then
+    pure ()
+  else
+    begin
+      t.pending <- keep;
+      t.last_flushed <- Js.Date.now();
+      Logger.debug 
+        (Printf.sprintf "Submitting %i transactions; keeping %i transactions in the queue." 
+           (List.length send) (List.length keep));
+      let promises = List.map (fun action -> action ()) send in
+      Js.Promise.all (Array.of_list promises) >>= fun _ ->
+      pure ()
+    end 
 
 (* Fact handler to queue yellow facts *)
 let log_yellow_facts t : Cyberlogic.fact_handler =
@@ -233,7 +257,8 @@ let create id prg =
     db = Cyberlogic.db_create ();
     id = Cyberlogic.Principal.Id id;
     contract = None;
-    pending = []
+    pending = [];
+    last_flushed = 0.0;
   } in
   Cyberlogic.db_subscribe_all_facts t.db (log_yellow_facts t);
   Cyberlogic.db_subscribe_goal t.db (json_handler t);
@@ -272,9 +297,9 @@ let goal t goal =
 
 let connect_to_contract t contract = 
   Logger.info "Connecting to contract";
-  t.contract <- Some contract;
+  t.contract <- Some contract; 
   Fabric.add_contract_listener contract (claim_event_listener t) >>= fun () ->
-  flush_pending t
+  flush_pending t 
 
 let add_fact_listener t (listener : Cyberlogic.Literal.t -> unit Js.Promise.t) = 
   Cyberlogic.db_subscribe_all_facts t.db 

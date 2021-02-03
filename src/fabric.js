@@ -68,7 +68,12 @@ async function addContractListener(contract, listener) {
 }
 
 async function addClaim(contract, msg) {
-  contract.submitTransaction('Claim', msg);
+  contract.submitTransaction('Claim', msg).catch(e => {
+    console.log("Error submitting transaction. Trying again later.");
+    setTimeout(function(){
+      addClaim(contract, msg);
+    }, 5000*(1 + Math.random()));
+  });
 }
 
 exports.getUserCertificate = getUserCertificate;
