@@ -25,7 +25,7 @@ module DN = struct
   external to_json :  t -> t_json = "toJSON" [@@bs.send]
 
   let equals n m =
-    to_string m = to_string m
+    to_string m = to_string n
 
   let get (name : t) (key : string) : string option =
     let json = to_json name in

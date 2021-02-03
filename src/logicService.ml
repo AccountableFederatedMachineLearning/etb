@@ -22,36 +22,31 @@ let run_later t (action : unit -> unit Js.Promise.t) =
 *)
 let rec flush_pending t : unit Js.Promise.t =
   let one_second = 1000.0 in
-  let repeat_in_two_seconds () = 
-    Js.Global.setTimeout (fun () -> 
-        ignore (flush_pending t)) 2000 |> ignore in
-  let send, keep = 
-    match Belt.List.splitAt t.pending transaction_limit_per_second with 
-    | Some(h, t) -> h, t
-    | None -> t.pending, [] in
-  if keep <> [] then
-    repeat_in_two_seconds ();    
-  if (Js.Date.now() -. t.last_flushed < one_second) then
+  if t.pending = [] then
     pure ()
-  else
-    begin
-      t.pending <- keep;
-      t.last_flushed <- Js.Date.now();
-      Logger.debug 
-        (Printf.sprintf "Submitting %i transactions; keeping %i transactions in the queue." 
-           (List.length send) (List.length keep));
-      let promises = List.map (fun action -> action ()) send in
-      Js.Promise.all (Array.of_list promises) >>= fun _ ->
-      pure ()
-    end 
+  else if (Js.Date.now() -. t.last_flushed < one_second) then
+    pure ()
+  else 
+    let send, keep = 
+      match Belt.List.splitAt t.pending transaction_limit_per_second with 
+      | Some(h, t) -> h, t
+      | None -> t.pending, [] in
+    t.pending <- keep;
+    t.last_flushed <- Js.Date.now();
+    Logger.debug 
+      (Printf.sprintf "Submitting %i transactions; keeping %i transactions in the queue." 
+         (List.length send) (List.length keep));
+    let promises = List.map (fun action -> action ()) send in
+    Js.Promise.all (Array.of_list promises) >>= fun _ ->
+    pure ()
 
 (* Fact handler to queue yellow facts *)
 let log_yellow_facts t : Cyberlogic.fact_handler =
   fun (fact : Cyberlogic.Literal.t) ->
+  Logger.fdebug "adding fact '%s' to db" (Syntax.Cyberlogic.short_literal fact);
   (* TODO: only log own facts *)  
   if Cyberlogic.(Principal.equals (Literal.principal fact) t.id) then
     begin
-      Logger.fdebug "adding fact '%s' to db" (Syntax.Cyberlogic.short_literal fact);
       let clause, premises = Cyberlogic.db_premises t.db fact in
       Logger.debug 
         (Printf.sprintf
@@ -72,7 +67,7 @@ let log_yellow_facts t : Cyberlogic.fact_handler =
             (* If no contract is installed, log the action again for later execution *)
             run_later t log_action;
             pure () in
-        run_later t log_action
+        run_later t log_action;
       | _ -> ()
     end
 
@@ -309,12 +304,20 @@ let goal t goal =
   Cyberlogic.db_goal t.db yellow_goal;
   flush_pending t
 
+let rec start_flush_timer t = 
+  let delay = 2000 in
+  Js.Global.setTimeout (fun () -> 
+      ignore (flush_pending t);
+      start_flush_timer t) 5000 
+  |> ignore
+
 let connect_to_contract t contract = 
   Logger.info "Connecting to contract";
   t.contract <- Some contract; 
   Fabric.add_contract_listener contract (claim_event_listener t) >>= fun () ->
+  start_flush_timer t;
   flush_pending t 
 
-let add_fact_listener t (listener : Cyberlogic.Literal.t -> unit Js.Promise.t) = 
+let add_fact_listener t (listener : Cyberlogic.Literal.t -> unit) = 
   Cyberlogic.db_subscribe_all_facts t.db 
-    (fun fact -> run_later t (fun () -> listener fact))
+    (fun fact -> listener fact)

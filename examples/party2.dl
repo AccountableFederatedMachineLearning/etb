@@ -1,5 +1,5 @@
 configuration('{"data": {"cls_ref": "CivitasKerasDataHandler", "info": {"npz_file": "examples/data/civitas/random/data_party2.npz"}}, "model": {"cls_ref": "KerasFLModel", "spec": {"model_definition": "examples/configs/civitas_classifier/compiled_civitas_keras.h5", "model_name": "keras-cnn"}}, "fusion": {}, "connection": {"cls_ref": "FlaskConnection", "info": {"ip": "127.0.0.1", "port": 8087, "tls_config": {"enable": false}}, "sync": false}, "protocol_handler": {"cls_ref": "PartyProtocolHandler"}, "hyperparams": null, "aggregator": {"ip": "127.0.0.1", "port": 5000}, "local_training": {"cls_ref": "LocalTrainingHandler"}, "evidencia": {"cls_ref": "HyperledgerEvidenceRecorder", "info": {"url": "http://localhost:5003/facts/add"}}}').
-training_data_labels_hash('a78afadd748c6b94cc079ff774f0cb1cdc7f82963d0c8bd8dfce5cac14e41eea').
-training_data_hash('4e6513d9a962eeaea3d5dd298e29e95c0e89df5b7237d7729706995d930baf5e').
+training_data_labels_hash('"a78afadd748c6b94cc079ff774f0cb1cdc7f82963d0c8bd8dfce5cac14e41eea"').
+training_data_hash('"4e6513d9a962eeaea3d5dd298e29e95c0e89df5b7237d7729706995d930baf5e"').
 training_data_size(1040).
 sent_model_update('"1d0eb0436f12d0b769ce90077c60bf40a791d8e97d0c4ad891c558ea166a3ba5"').
