@@ -1,7 +1,8 @@
 open Default
 open Promise
 
-let transaction_submit_rate_per_second = 100
+external transaction_limit_per_second : int = 
+  "transaction_limit_per_second" [@@bs.module("./config.js")]
 
 (** State of the logic service *)
 type t = { 
@@ -25,7 +26,7 @@ let rec flush_pending t : unit Js.Promise.t =
     Js.Global.setTimeout (fun () -> 
         ignore (flush_pending t)) 2000 |> ignore in
   let send, keep = 
-    match Belt.List.splitAt t.pending transaction_submit_rate_per_second with 
+    match Belt.List.splitAt t.pending transaction_limit_per_second with 
     | Some(h, t) -> h, t
     | None -> t.pending, [] in
   if keep <> [] then

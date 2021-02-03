@@ -5,5 +5,6 @@ config.connectionProfile = "../H/fabric-samples/test-network/organizations/peerO
 config.channelName = "mychannel";
 config.chaincodeId = "basic";
 config.walletDirectory = "../H/fabric-samples/asset-transfer-basic/application-java/wallet";
+config.transaction_limit_per_second = 100
 
 module.exports = config;
