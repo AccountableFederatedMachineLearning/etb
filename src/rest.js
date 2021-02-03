@@ -17,6 +17,7 @@ var io = require('socket.io')(http, {
 });
 
 const fact_event = 'fact';
+const all_facts_event = 'all_facts';
 
 async function main() {
   var args = process.argv.slice(2);
@@ -91,9 +92,11 @@ async function main() {
   io.on('connection', async (socket) => {
     logger.info('a user connected');
     let facts = await rest.facts_get(db);
+    const fact_array = [];
     for (const fact of facts) {
-      io.emit(fact_event, fact);
+      fact_array.push(fact);
     }
+    io.emit(all_facts_event, fact_array);
   });
 
   logicService.add_fact_listener(db, (fact) => {

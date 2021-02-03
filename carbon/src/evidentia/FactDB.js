@@ -25,39 +25,26 @@ const initDb = {
 function getPrincipal(db, principal) {
   let id = db.principals.findIndex(p => getFirstCN(p.subject) === getFirstCN(principal.subject));
   if (id < 0) {
-    let db1 = {
-      ...db,
-      principals: [...db.principals, principal]
-    }
-    id = db1.principals.length - 1;
-    return [id, db1]
-  } else {
-    return [id, db];
-  }
+    db.principals.push(principal)
+    id = db.principals.length - 1;
+  } 
+  return id;
 }
 
 function addClaim(db, msg) {
-  let [cn, db1] = getPrincipal(db, msg.principal);
-  let claims = db1.claims;
-  let symbolEntry = claims[msg.literal.symbol] || {};
-  let principalEntry = symbolEntry[cn] || {};
+  let cn = getPrincipal(db, msg.principal);
+  let claims = db.claims;
+  if (claims[msg.literal.symbol] === undefined) {
+    claims[msg.literal.symbol] = {};
+  }
+  if (claims[msg.literal.symbol][cn] === undefined) {
+    claims[msg.literal.symbol][cn] = {};
+  }
   let args = JSON.stringify(msg.literal.arguments);
-  let argsEntry = principalEntry[args] || new Set();
-  let newArgsEntry = new Set(argsEntry);
-  newArgsEntry.add(msg.color);
-  return {
-    ...db1,
-    claims: {
-      ...claims,
-      [msg.literal.symbol]: {
-        ...symbolEntry,
-        [cn]: {
-          ...principalEntry,
-          [args]: newArgsEntry
-        }
-      }
-    }
-  };
+  if (claims[msg.literal.symbol][cn][args] === undefined) {
+    claims[msg.literal.symbol][cn][args] = new Set();
+  }
+  claims[msg.literal.symbol][cn][args].add(msg.color);
 }
 
 function getClaims(db, symbol, principalCN = undefined) {

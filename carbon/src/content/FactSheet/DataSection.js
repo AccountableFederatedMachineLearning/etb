@@ -10,7 +10,7 @@ const DataSection = props =>
   <>
     <h2 id="data" className="fact-sheet__subheading">
       Data
-                      </h2>
+    </h2>
 
     <p className="fact-sheet__p">
       This section gives information about the data used by the participants.

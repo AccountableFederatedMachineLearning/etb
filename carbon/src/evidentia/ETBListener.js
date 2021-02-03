@@ -12,8 +12,21 @@ class ETBListener extends React.Component {
     var socket = io();
     var etbListener = this;
     console.log(socket);
+
     socket.on('fact', (msg) =>
-      etbListener.setState(db => addClaim(db, msg)))
+      etbListener.setState(db => {
+        addClaim(db, msg);
+        return db
+      }));
+
+    socket.on('all_facts', (msg) => {
+      etbListener.setState(db => {
+        for (const fact of msg) {
+          addClaim(db, fact)
+        }
+        return db;
+      })
+    })
   }
 
   render() {
