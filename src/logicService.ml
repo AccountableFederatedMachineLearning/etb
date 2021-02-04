@@ -52,15 +52,15 @@ let log_yellow_facts t : Cyberlogic.fact_handler =
   (* TODO: only log own facts *)  
   if Cyberlogic.(Principal.equals (Literal.principal fact) t.id) then
     begin
-      let clause, premises = Cyberlogic.db_premises t.db fact in
-      Logger.debug 
-        (Printf.sprintf
+      (* let clause, premises = Cyberlogic.db_premises t.db fact in
+         Logger.debug 
+         (Printf.sprintf
            "  - the fact was derived by clause '%s' with premises [%s]." 
            (Syntax.Cyberlogic.short_clause clause)
-           (String.concat ", " (List.map Syntax.Cyberlogic.short_literal premises)));
+           (String.concat ", " (List.map Syntax.Cyberlogic.short_literal premises))); *)
       match Cyberlogic.Literal.color fact with
       | Yellow ->
-        Logger.debug("  - queueing log(" ^ Syntax.Cyberlogic.short_literal fact ^ ")");
+        Logger.debug("queueing log(" ^ Syntax.Cyberlogic.short_literal fact ^ ")");
         let rec log_action () = 
           match t.contract with
           | Some contract ->
