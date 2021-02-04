@@ -16,17 +16,15 @@ type t = {
 let run_later t (action : unit -> unit Js.Promise.t) =
   t.pending <- action :: t.pending
 
-(* Execute all pending actions (in unspecified order).
- * If it cannot submit all transaction due to rate limit,
- * it sets a timer to a timer to submit later.
-*)
+
+(* Execute all pending actions (in unspecified order). *)
 let rec flush_pending t : unit Js.Promise.t =
   let one_second = 1000.0 in
   if t.pending = [] then
     pure ()
   else if (Js.Date.now() -. t.last_flushed < one_second) then
     pure ()
-  else 
+  else
     let send, keep = 
       match Belt.List.splitAt t.pending transaction_limit_per_second with 
       | Some(h, t) -> h, t
@@ -39,6 +37,13 @@ let rec flush_pending t : unit Js.Promise.t =
     let promises = List.map (fun action -> action ()) send in
     Js.Promise.all (Array.of_list promises) >>= fun _ ->
     pure ()
+
+(* With rate limiting, not all queued functions are flushed every time.
+   To ensure that everything is flushed eventually, we just flush regularly. *)
+let rec flush_every_2s t = 
+  flush_pending t >>= fun _ -> 
+  Promise.wait 2000 >>= fun _ -> 
+  flush_every_2s t
 
 (* Fact handler to queue yellow facts *)
 let log_yellow_facts t : Cyberlogic.fact_handler =
@@ -304,19 +309,11 @@ let goal t goal =
   Cyberlogic.db_goal t.db yellow_goal;
   flush_pending t
 
-let rec start_flush_timer t = 
-  let delay = 2000 in
-  Js.Global.setTimeout (fun () -> 
-      ignore (flush_pending t);
-      start_flush_timer t) 5000 
-  |> ignore
-
 let connect_to_contract t contract = 
   Logger.info "Connecting to contract";
   t.contract <- Some contract; 
   Fabric.add_contract_listener contract (claim_event_listener t) >>= fun () ->
-  start_flush_timer t;
-  flush_pending t 
+  flush_every_2s t
 
 let add_fact_listener t (listener : Cyberlogic.Literal.t -> unit) = 
   Cyberlogic.db_subscribe_all_facts t.db 
