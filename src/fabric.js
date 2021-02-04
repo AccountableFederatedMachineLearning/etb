@@ -49,7 +49,7 @@ async function connect(userId) {
   const gatewayOptions = {
     identity: userId,
     wallet,
-    discovery: { enabled: true, asLocalhost: false }
+    discovery: { enabled: true, asLocalhost: true }
   };
   const gateway = new Gateway();
   await gateway.connect(connectionProfile, gatewayOptions);

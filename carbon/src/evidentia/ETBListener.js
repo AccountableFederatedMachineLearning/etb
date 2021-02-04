@@ -21,7 +21,7 @@ class ETBListener extends React.Component {
   }
 
   componentDidMount() {
-    var socket = io("http://localhost:5000");
+    var socket = io();
     var etbListener = this;
     console.log(socket);
 
