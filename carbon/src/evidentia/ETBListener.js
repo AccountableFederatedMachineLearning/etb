@@ -6,6 +6,18 @@ class ETBListener extends React.Component {
   constructor(props) {
     super(props);
     this.state = initDb;
+    this.newDb = undefined;
+  }
+
+  applyUpdates() {
+    var etbListener = this;
+    setTimeout(() => {
+      if (etbListener.newDb !== undefined) {
+        etbListener.setState(etbListener.newDb);
+        etbListener.newDb = undefined;
+      }
+      this.applyUpdates();
+    }, 1000);
   }
 
   componentDidMount() {
@@ -13,12 +25,12 @@ class ETBListener extends React.Component {
     var etbListener = this;
     console.log(socket);
 
-    socket.on('fact', (msg) =>
-      etbListener.setState(db => {
-        const db1 = { ...db }
-        addClaim(db1, msg);
-        return db1
-      }));
+    socket.on('fact', (msg) => {
+      if (etbListener.newDb === undefined) {
+        etbListener.newDb = { ...etbListener.state }
+      }
+      addClaim(etbListener.newDb, msg);
+    });
 
     socket.on('all_facts', (msg) => {
       etbListener.setState(db => {
@@ -29,6 +41,7 @@ class ETBListener extends React.Component {
         return db1;
       })
     })
+    this.applyUpdates();
   }
 
   render() {
