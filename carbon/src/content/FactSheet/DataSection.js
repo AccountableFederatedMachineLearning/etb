@@ -4,7 +4,21 @@ import {
   CodeSnippet,
   ListItem,
 } from 'carbon-components-react';
-import { Instances, ClaimOk, ClaimFail, jsonOfConstant, getFirstCN } from '../../evidentia';
+import { GroupedBarChart } from "@carbon/charts-react";
+import { Instances, ClaimOk, ClaimFail, jsonOfConstant, getFirstCN, getClaims } from '../../evidentia';
+
+const chartOptions = {
+	"axes": {
+		"left": {
+			"mapsTo": "value"
+		},
+		"bottom": {
+			"scaleType": "labels",
+			"mapsTo": "key"
+		}
+	},
+	"height": "400px"
+}
 
 const DataSection = props =>
   <>
@@ -73,11 +87,45 @@ const DataSection = props =>
     </p>
 
     {/* ---------------------------------------- */}
-    <h3 className="fact-sheet__subsubheading">Identity of Training Data Labels</h3>
+    <h3 className="fact-sheet__subsubheading">
+      Training Data Labels
+    </h3>
+    
+    <p className="fact-sheet__p">
+      The following graph shows the number of data samples per label in the training data.
+    </p>
+
+    <Instances db={props.db} symbol="training_data_count_per_label"
+      // principal="aggregator"
+      empty={<>Training data label information not (yet) available.<ClaimFail /></>}>
+      {claims => {
+        const data = claims.map(claim => {
+          const subject =  getFirstCN(claim.principal.subject)
+          const labelNamesClaim = getClaims(props.db, "labels_list", subject);
+          var label = claim.args[0]
+          if (labelNamesClaim[0]?.args[0] !== undefined) {
+            const labelNames =jsonOfConstant(labelNamesClaim[0].args[0])
+            label = labelNames[claim.args[0]]
+          }
+          return ({ group: subject, key: label, value: claim.args[1] })
+        });
+        data.sort((a, b) => a.key - b.key);
+        return <GroupedBarChart className="fact-sheet__chart" data={data} options={chartOptions} />
+      }}
+    </Instances>
 
     <p className="fact-sheet__p">
-      To make the training process reproducible, the participants have recorded hashes
-      of their training data.
+    </p>
+
+
+    {/* ---------------------------------------- */}
+    <h3 className="fact-sheet__subsubheading">
+      Identity of Training Data Labels
+    </h3>
+
+    <p className="fact-sheet__p">
+      To make the training process reproducible, the participants have recorded SHA512-hashes
+      of their training data labels.
     </p>
 
     <UnorderedList>
@@ -87,7 +135,7 @@ const DataSection = props =>
         {claims =>
           claims.map(claim =>
             <ListItem key={JSON.stringify(claim)}>
-              The training label data of {getFirstCN(claim.principal.subject)} has the following hash.
+              The training label data of {getFirstCN(claim.principal.subject)} has the following SHA512-hash.
             <ClaimOk claim={claim} />
               <CodeSnippet type="single" hideCopyButton={true}>
                 {claim.args[0]}

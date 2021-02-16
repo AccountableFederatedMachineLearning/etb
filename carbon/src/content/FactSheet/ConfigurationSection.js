@@ -26,7 +26,7 @@ const ConfigTable = props =>
     {claims =>
       claims.map(claim => {
         let config = jsonOfConstant(claim.args[0]);
-        if (config?.hyperparams.global === undefined) {
+        if (config?.hyperparams?.global === undefined) {
           return null;
         } else {
           const data = [
@@ -147,7 +147,7 @@ const ConfigurationSection = props =>
       {claims =>
         claims.map(claim => {
           let config = jsonOfConstant(claim.args[0]);
-          if (config.hyperparams === undefined || config.hyperparams.local === undefined) {
+          if (config?.hyperparams === undefined || config?.hyperparams?.local === undefined) {
             return null;
           } else {
             return <React.Fragment key={JSON.stringify(claim)}>

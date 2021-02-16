@@ -8,7 +8,6 @@ import "@carbon/charts/styles.css";
 import { Instances, ClaimOk, ClaimFail, jsonOfConstant, getFirstCN } from '../../evidentia';
 
 const chartOptions = {
-  "title": "Model Performance Evolution",
   "axes": {
     "bottom": {
       "title": "Round",
@@ -53,6 +52,11 @@ const ModelSection = props =>
         })}
     </Instances>
 
+    <h3 id="modelinformation" className="fact-sheet__subheading">
+      Performance Evolution
+    </h3>
+
+
     <p className="fact-sheet__p">
       The following graph shows the evolution of the performance of the model
       over the rounds, as reported by the aggregator.
@@ -62,7 +66,7 @@ const ModelSection = props =>
       // principal="aggregator"
       empty={<>Performance information not (yet) available.<ClaimFail /></>}>
       {claims => {
-        const accData = claims.map(claim => ({ group: "accuracy", key: claim.args[0], value: jsonOfConstant(claim.args[1])?.acc }));
+        const accData = claims.map(claim => ({ group: claim.principal, key: claim.args[0], value: claim.args[1] }));
         const f1MicroData = claims.map(claim => ({ group: "f1 micro", key: claim.args[0], value: jsonOfConstant(claim.args[1])["f1 micro"] }));
         accData.sort((a, b) => a.key - b.key);
         f1MicroData.sort((a, b) => a.key - b.key);

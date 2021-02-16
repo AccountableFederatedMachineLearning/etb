@@ -3,3 +3,9 @@ training_data_labels_hash('"a78afadd748c6b94cc079ff774f0cb1cdc7f82963d0c8bd8dfce
 training_data_hash('"4e6513d9a962eeaea3d5dd298e29e95c0e89df5b7237d7729706995d930baf5e"').
 training_data_size(1040).
 sent_model_update('"1d0eb0436f12d0b769ce90077c60bf40a791d8e97d0c4ad891c558ea166a3ba5"').
+
+labels_list('["Verkehr & Mobilität", "Städtebau & Stadtraum", "Sonstiges", "Grün & Erholung"]').
+training_data_count_per_label(0,497).
+ training_data_count_per_label(1,133).
+ training_data_count_per_label(2,134).
+ training_data_count_per_label(3,90).
