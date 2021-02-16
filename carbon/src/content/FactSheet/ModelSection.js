@@ -66,11 +66,14 @@ const ModelSection = props =>
       // principal="aggregator"
       empty={<>Performance information not (yet) available.<ClaimFail /></>}>
       {claims => {
-        const accData = claims.map(claim => ({ group: claim.principal, key: claim.args[0], value: claim.args[1] }));
-        const f1MicroData = claims.map(claim => ({ group: "f1 micro", key: claim.args[0], value: jsonOfConstant(claim.args[1])["f1 micro"] }));
-        accData.sort((a, b) => a.key - b.key);
-        f1MicroData.sort((a, b) => a.key - b.key);
-        const data = accData.concat(f1MicroData);
+        const data = claims.flatMap(claim => {
+          const values = jsonOfConstant(claim.args[1])
+          if (values === undefined) {
+            return []
+          }
+          return Object.keys(values).map(k => ({ group: k, key: claim.args[0], value: values[k] }))
+        })
+        data.sort((a, b) => a.key - b.key);
         return <LineChart className="fact-sheet__chart" data={data} options={chartOptions} />
       }}
     </Instances>

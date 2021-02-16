@@ -8,16 +8,16 @@ import { GroupedBarChart } from "@carbon/charts-react";
 import { Instances, ClaimOk, ClaimFail, jsonOfConstant, getFirstCN, getClaims } from '../../evidentia';
 
 const chartOptions = {
-	"axes": {
-		"left": {
-			"mapsTo": "value"
-		},
-		"bottom": {
-			"scaleType": "labels",
-			"mapsTo": "key"
-		}
-	},
-	"height": "400px"
+  "axes": {
+    "left": {
+      "mapsTo": "value"
+    },
+    "bottom": {
+      "scaleType": "labels",
+      "mapsTo": "key"
+    }
+  },
+  "height": "400px"
 }
 
 const DataSection = props =>
@@ -90,7 +90,7 @@ const DataSection = props =>
     <h3 className="fact-sheet__subsubheading">
       Training Data Labels
     </h3>
-    
+
     <p className="fact-sheet__p">
       The following graph shows the number of data samples per label in the training data.
     </p>
@@ -100,16 +100,16 @@ const DataSection = props =>
       empty={<>Training data label information not (yet) available.<ClaimFail /></>}>
       {claims => {
         const data = claims.map(claim => {
-          const subject =  getFirstCN(claim.principal.subject)
+          const subject = getFirstCN(claim.principal.subject)
           const labelNamesClaim = getClaims(props.db, "labels_list", subject);
           var label = claim.args[0]
           if (labelNamesClaim[0]?.args[0] !== undefined) {
-            const labelNames =jsonOfConstant(labelNamesClaim[0].args[0])
+            const labelNames = jsonOfConstant(labelNamesClaim[0].args[0])
             label = labelNames[claim.args[0]]
           }
           return ({ group: subject, key: label, value: claim.args[1] })
         });
-        data.sort((a, b) => a.key - b.key);
+        data.sort((a, b) => a.key.localeCompare(b.key));
         return <GroupedBarChart className="fact-sheet__chart" data={data} options={chartOptions} />
       }}
     </Instances>
