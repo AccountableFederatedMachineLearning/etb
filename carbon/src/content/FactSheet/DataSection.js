@@ -78,7 +78,7 @@ const DataSection = props =>
     <p className="fact-sheet__p">
       To make the training process reproducible, the participants have recorded hashes
       of their training data.
-                      </p>
+    </p>
 
     <UnorderedList>
       <Instances db={props.db}
@@ -96,6 +96,8 @@ const DataSection = props =>
           )}
       </Instances>
     </UnorderedList>
+
+
 
     <p className="fact-sheet__p">
     </p>

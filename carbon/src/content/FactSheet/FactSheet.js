@@ -3,25 +3,17 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   Button,
-  UnorderedList,
   Tabs,
   Tab,
-  ListItem,
 } from 'carbon-components-react';
 import { InfoSection, InfoCard } from '../../components/Info';
 import Globe32 from '@carbon/icons-react/lib/globe/32';
 import PersonFavorite32 from '@carbon/icons-react/lib/person--favorite/32';
 import Application32 from '@carbon/icons-react/lib/application/32';
-import {
-  ETBListener,
-  Instances,
-  ClaimOk,
-  ClaimFail,
-  jsonOfConstant,
-  getFirstCN
-} from '../../evidentia';
+import { ETBListener } from '../../evidentia';
 import { StatusSection } from './StatusSection';
 import { DataSection } from './DataSection';
+import { ModelSection } from './ModelSection';
 import { ConfigurationSection } from './ConfigurationSection';
 import { ParticipantsSection } from './ParticipantsSection';
 import { RawClaims } from './RawClaims';
@@ -121,32 +113,8 @@ class FactSheet extends ETBListener {
 
                       <DataSection db={this.state} />
 
-                      <h2 id="modelinformation" className="fact-sheet__subheading">
-                        Model Information
-                      </h2>
+                      <ModelSection db={this.state} />
 
-                      <p className="fact-sheet__p">
-                      </p>
-
-                      <Instances db={this.state} symbol="configuration"
-                        empty={<>Information about the configuration of participants is (still) missing.<ClaimFail /></>}>
-                        {claims =>
-                          claims.map(claim => {
-                            let config = jsonOfConstant(claim.args[0]);
-                            return <React.Fragment key={JSON.stringify(claim)}>
-                              <h3 className="fact-sheet__subsubheading">
-                                Model details of {getFirstCN(claim.principal.subject)}
-                                <ClaimOk claim={claim} />
-                              </h3>
-
-                              <UnorderedList>
-                                <ListItem> Model name: <tt>{config?.model?.spec?.model_name}</tt> </ListItem>
-                                <ListItem> Model definition: <tt>{config?.model?.spec?.model_definition}</tt> </ListItem>
-                                <ListItem> Class reference: <tt>{config?.model?.cls_ref}</tt> </ListItem>
-                              </UnorderedList>
-                            </React.Fragment>
-                          })}
-                      </Instances>
                     </div>
                     <div className="bx--col-md-0 bx--col-md-0 bx--offset-lg-1 bx--col-lg-3 ">
                       <img

@@ -2,12 +2,12 @@
   "name": "yg",
   "version": "0.1.0",
   "dependencies": {
-    "@peculiar/x509": "^1.0.6",
+    "@peculiar/x509": "^1.1.0",
     "body-parser": "^1.19.0",
     "bs-express": "^1.0.2",
     "bs-winston": "^0.6.2",
-    "fabric-network": "^2.2.3",
-    "socket.io": "^3.0.1"
+    "fabric-network": "^2.2.5",
+    "socket.io": "^3.1.1"
   },
   "scripts": {
     "clean": "bsb -clean-world",
@@ -23,6 +23,6 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "bs-platform": "^8.3.3"
+    "bs-platform": "^8.4.2"
   }
 }

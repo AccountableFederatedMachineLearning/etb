@@ -15,11 +15,14 @@
     "deploy": "rm -rf ./build && npm build && cf push -f manifest.yml"
   },
   "dependencies": {
+    "@carbon/charts": "^0.41.32",
+    "@carbon/charts-react": "^0.41.32",
     "@carbon/grid": "^10.19.0",
     "@carbon/icons-react": "^10.24.0",
     "carbon-components": "^10.27.0",
     "carbon-components-react": "^7.27.0",
     "carbon-icons": "^7.0.7",
+    "d3": "^5.16.0",
     "node-sass": "^4.0.0",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",

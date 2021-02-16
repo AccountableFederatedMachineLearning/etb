@@ -34,7 +34,7 @@ let rec flush_pending t : unit Js.Promise.t =
     Logger.debug 
       (Printf.sprintf "Submitting %i transactions; keeping %i transactions in the queue." 
          (List.length send) (List.length keep));
-    List.fold_left (fun c action -> c >>= fun _ -> action ()) (pure ()) send
+    List.fold_left (>>=) (pure ()) send
 
 (* With rate limiting, not all queued functions are flushed every time.
    To ensure that everything is flushed eventually, we just flush regularly. *)
