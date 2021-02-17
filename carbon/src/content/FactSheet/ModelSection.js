@@ -16,7 +16,7 @@ const chartOptions = {
     },
     "left": {
       "mapsTo": "value",
-      "title": "Performance",
+      "title": "Value",
       "scaleType": "linear"
     }
   },
@@ -30,6 +30,14 @@ const ModelSection = props =>
     </h2>
 
     <p className="fact-sheet__p">
+      <Instances db={props.db} symbol="configuration"
+        empty={<>Information about the configuration of participants is (still) missing.<ClaimFail /></>}>
+        {claims =>
+          claims.map(claim => {
+            let config = jsonOfConstant(claim.args[0]);
+            return <>Model name: <tt>{config?.model?.spec?.model_name}</tt></>
+          })}
+      </Instances>
     </p>
 
     <Instances db={props.db} symbol="configuration"
@@ -52,7 +60,7 @@ const ModelSection = props =>
         })}
     </Instances>
 
-    <h3 id="modelinformation" className="fact-sheet__subheading">
+    <h3 className="fact-sheet__subheading">
       Performance Evolution
     </h3>
 

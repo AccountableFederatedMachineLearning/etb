@@ -61,6 +61,10 @@
   @include carbon--type-style('code-02');
 }
 
+.fact-sheet__structured-list {
+  margin-bottom: $spacing-05;
+}
+
 .fact-sheet__missing {
   color: #da1e28  ;
 }

@@ -106,6 +106,8 @@ const ConfigurationSection = props =>
       the following hyper-parameters of the training process.
                       </p>
 
+    <h3 className="fact-sheet__subsubheading">Fusion Algorithm</h3>
+
     <p className="fact-sheet__p">
       <Instances db={props.db}
         symbol="configuration"
