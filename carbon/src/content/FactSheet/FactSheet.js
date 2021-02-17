@@ -81,7 +81,7 @@ class FactSheet extends ETBListener {
                         <Button kind='ghost' href="#modelinformation">Model Information</Button>
                       </div>
                       <div className="bx--row">
-                        <Button kind='ghost' href="#modelinformation">MUSKETEER Infrastructure</Button>
+                        <Button kind='ghost' href="#musketeer">MUSKETEER Infrastructure</Button>
                       </div>
                     </div>
                     <div className="bx--col-md-6 bx--col-lg-9">
@@ -184,17 +184,21 @@ class FactSheet extends ETBListener {
           <InfoCard
             heading="IBM Federated&nbsp;Learning"
             body="The IBM Federated Learning Framework TODO: Text, link, icon"
-            icon={<PersonFavorite32 />}
+            icon={<>IBM</>}
           />
           <InfoCard
             heading="fortiss Evidentia"
-            body="TODO: Text, link, icon"
-            icon={<Application32 />}
+            body={<><a href="https://fortiss.org">fortiss</a> develops the
+            Evidentia platform. TODO: Text"</>}
+            icon={<img width="100px" style={{ marginLeft: "-15px" }} src="https://www.fortiss.org/fileadmin/user_upload/Veroeffentlichungen/Informationsmaterialien/Logo_fortiss_RGB_blue.png" />}
           />
           <InfoCard
             heading="MUSKETEER"
-            body="MUSKETEER creates a validated, federated, privacy-preserving machine learning platform tested on industrial data that is inter-operable, scalable and efficient enough to be deployed in real use cases."
-            icon={<Globe32 />}
+            body={<>The <a href="https://musketeer.eu/">MUSKETEER project</a>{" "}
+            creates a validated, federated, privacy-preserving machine learning
+            platform tested on industrial data that is inter-operable, scalable
+            and efficient enough to be deployed in real use cases.</>}
+            icon={<img width="120px" src="https://i2.wp.com/musketeer.eu/wp-content/uploads/2019/02/cropped-MUSKETEER_logo_RGB_2.jpg?w=2481&ssl=1" />}
           />
         </InfoSection>
       </div>
