@@ -30,12 +30,15 @@ const ModelSection = props =>
     </h2>
 
     <p className="fact-sheet__p">
-      <Instances db={props.db} symbol="configuration"
+      <Instances db={props.db} symbol="configuration" principal="aggregator"
         empty={<>Information about the configuration of participants is (still) missing.<ClaimFail /></>}>
         {claims =>
           claims.map(claim => {
             let config = jsonOfConstant(claim.args[0]);
-            return <>Model name: <tt>{config?.model?.spec?.model_name}</tt></>
+            return <>
+              Model name: <tt>{config?.model?.spec?.model_name}</tt>
+              <ClaimOk claim={claim} />{" "}
+            </>
           })}
       </Instances>
     </p>

@@ -43,8 +43,8 @@ const DataSection = props =>
             } else {
               return <React.Fragment key={JSON.stringify(claim)}>
                 <ListItem>
-                  {getFirstCN(claim.principal.subject)} records the following
-                   information about the used data:
+                  {getFirstCN(claim.principal.subject)} uses the data handler <tt>{config.data.cls_ref}</tt> and 
+                  records the following information about the data:
                   <ClaimOk claim={claim} />
                   <CodeSnippet type="single" hideCopyButton={true}>
                     {JSON.stringify(config?.data?.info)}
@@ -84,7 +84,7 @@ const DataSection = props =>
     <p className="fact-sheet__p">
       To make the training process reproducible, the participants have recorded hashes
       of their training data.
-                      </p>
+    </p>
 
     <UnorderedList>
       <Instances db={props.db}
