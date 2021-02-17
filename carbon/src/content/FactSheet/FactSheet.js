@@ -183,13 +183,21 @@ class FactSheet extends ETBListener {
         <InfoSection heading="The Ingredients" className="fact-sheet__r3">
           <InfoCard
             heading="IBM Federated&nbsp;Learning"
-            body="The IBM Federated Learning Framework TODO: Text, link, icon"
-            icon={<>IBM</>}
+            body={<>
+              <a href="https://github.com/IBM/federated-learning-lib">IBM federated learning</a> is a Python framework for
+             federated learning in an enterprise environment.
+             IBM federated learning comes with a large library of fusion algorithms
+             for DNNs and classic ML approaches.
+              </>}
+            icon={<img style={{ marginTop: "10px" }} src="https://raw.githubusercontent.com/IBM/federated-learning-lib/main/docs/assets/images/ibmfl_logo.png" />}
           />
           <InfoCard
             heading="fortiss Evidentia"
-            body={<><a href="https://fortiss.org">fortiss</a> develops the
-            Evidentia platform. TODO: Text"</>}
+            body={<><a href="https://fortiss.org">fortiss</a> develops a
+            platform for distributed accountable evidential transactions.
+            It provides trust in heterogeneous settings by allowing parties
+            to share claims and evidence for them.
+            </>}
             icon={<img width="100px" style={{ marginLeft: "-15px" }} src="https://www.fortiss.org/fileadmin/user_upload/Veroeffentlichungen/Informationsmaterialien/Logo_fortiss_RGB_blue.png" />}
           />
           <InfoCard
@@ -198,7 +206,7 @@ class FactSheet extends ETBListener {
             creates a validated, federated, privacy-preserving machine learning
             platform tested on industrial data that is inter-operable, scalable
             and efficient enough to be deployed in real use cases.</>}
-            icon={<img width="120px" src="https://i2.wp.com/musketeer.eu/wp-content/uploads/2019/02/cropped-MUSKETEER_logo_RGB_2.jpg?w=2481&ssl=1" />}
+            icon={<img width="120px" style={{ mixBlendMode: "multiply" }} src="https://i2.wp.com/musketeer.eu/wp-content/uploads/2019/02/cropped-MUSKETEER_logo_RGB_2.jpg?w=2481&ssl=1" />}
           />
         </InfoSection>
       </div>
