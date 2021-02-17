@@ -89,7 +89,7 @@ const ModelSection = props =>
       }}
     </Instances>
 
-    <p className="fact-sheet__p">
+    <p className="fact-sheet__p">{" "}
     </p>
 
   </>
