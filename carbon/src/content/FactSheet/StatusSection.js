@@ -6,7 +6,6 @@ import {
   StructuredListHead,
   StructuredListBody,
   StructuredListRow,
-  StructuredListInput,
   StructuredListCell,
 } from 'carbon-components-react';
 import { Instances, Expected, NotExpected } from '../../evidentia';

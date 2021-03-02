@@ -3,7 +3,7 @@ import {
   DataTable, Table, TableHeader, TableHead, TableRow, TableBody, TableCell,
   TableExpandHeader, TableExpandRow, TableExpandedRow
 } from 'carbon-components-react';
-import { Instances, ClaimOk, ClaimFail, getFirstCN, getOU, jsonOfConstant, } from '../../evidentia';
+import { Instances, ClaimFail, jsonOfConstant, } from '../../evidentia';
 
 const sentModelTableHeader = [
   {

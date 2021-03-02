@@ -7,9 +7,6 @@ import {
   Tab,
 } from 'carbon-components-react';
 import { InfoSection, InfoCard } from '../../components/Info';
-import Globe32 from '@carbon/icons-react/lib/globe/32';
-import PersonFavorite32 from '@carbon/icons-react/lib/person--favorite/32';
-import Application32 from '@carbon/icons-react/lib/application/32';
 import { ETBListener } from '../../evidentia';
 import { StatusSection } from './StatusSection';
 import { DataSection } from './DataSection';
@@ -81,7 +78,7 @@ class FactSheet extends ETBListener {
                         <Button kind='ghost' href="#modelinformation">Model Information</Button>
                       </div>
                       <div className="bx--row">
-                        <Button kind='ghost' href="#musketeer">MUSKETEER Infrastructure</Button>
+                        <Button kind='ghost' href="#musketeer">Model Lineage</Button>
                       </div>
                     </div>
                     <div className="bx--col-md-6 bx--col-lg-9">
