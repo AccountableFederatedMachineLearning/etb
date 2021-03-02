@@ -93,7 +93,7 @@ const StatusSection = props =>
             has been received.
           </StructuredListCell>
         </StructuredListRow>
-        <StructuredListRow tabIndex={0}>
+        {/* <StructuredListRow tabIndex={0}>
           <StructuredListCell>
             All parties have acknowledged that they are satisfied with the
             logged infomation.
@@ -104,7 +104,7 @@ const StatusSection = props =>
             from their point of view, all necessary data has appeard on the
             log, they have acknowledged this with an acknowledgment log entry.
           </StructuredListCell>
-        </StructuredListRow>
+        </StructuredListRow> */}
       </StructuredListBody>
     </StructuredListWrapper>
 

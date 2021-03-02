@@ -185,7 +185,7 @@ const ModelUpdatesTable = props =>
 const MusketeerSection = props =>
   <>
     <h2 id="musketeer" className="fact-sheet__subheading">
-      MUSKETEER Infrastructure
+      Model Lineage
     </h2>
 
     <p className="fact-sheet__p">
